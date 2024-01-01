@@ -38,6 +38,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Image = System.Drawing.Image;
 using DMGINC.Properties.DataSources;
+using System.Windows.Threading;
 
 namespace DMGINC
 {
@@ -5608,7 +5609,10 @@ namespace DMGINC
 
         private void frmMain_Load(object sender, RoutedEventArgs e)
         {
-           
+            DispatcherTimer tmrCheckUser = new DispatcherTimer();
+            tmrCheckUser.IsEnabled = true;
+            tmrCheckUser.Interval = new TimeSpan(1);
+            tmrCheckUser.Tick += tmrCheckUser_Tick;
             this.Title = $"Damage Inc. SSMS [{manager.CompanyName}]";
             foreach (ResourceDictionary dictionary in this.Resources.MergedDictionaries)
             {
@@ -5655,6 +5659,54 @@ namespace DMGINC
                 {
                     manager.FillDG(dgContents, manager.Tables[cbSelectTable.Text].Tables[0]);
                 }
+            }
+        }
+
+        private void tmrCheckUser_Tick(object? sender, EventArgs e)
+        {
+            if (manager.CurrentUser == null)
+            {
+                dgContents.IsEnabled = false;
+                btnLogin.IsEnabled = true;
+                btnLogout.IsEnabled = false;
+                btnSearch.IsEnabled = false;
+                txtSearch.IsEnabled = false;
+                btnAdd.IsEnabled = false;
+                btnUpdate.IsEnabled = false;
+                btnDelete.IsEnabled = false;
+                btnAddToBulkList.IsEnabled = false;
+                btnRemoveFromBulkList.IsEnabled = false;
+                btnGenerateReport.IsEnabled = false;
+                btnCommitOperation.IsEnabled = false;
+                cbSelectTable.IsEnabled = false;
+                cbSelectCriteria.IsEnabled = false;
+                cbSelectBulkOperation.IsEnabled = false;
+                cbLookBelow.IsEnabled = false;
+                cbSelectReportType.IsEnabled = false;
+                lstLogs.IsEnabled = false;
+                rvViewReport.Enabled = false;
+            }
+            else
+            {
+                dgContents.IsEnabled = true;
+                btnLogin.IsEnabled = false;
+                btnLogout.IsEnabled = true;
+                btnSearch.IsEnabled = true;
+                txtSearch.IsEnabled = true;
+                btnAdd.IsEnabled = true;
+                btnUpdate.IsEnabled = true;
+                btnDelete.IsEnabled = true;
+                btnAddToBulkList.IsEnabled = false;
+                btnRemoveFromBulkList.IsEnabled = true;
+                btnGenerateReport.IsEnabled = true;
+                btnCommitOperation.IsEnabled = true;
+                cbSelectTable.IsEnabled = true;
+                cbSelectCriteria.IsEnabled = true;
+                cbSelectBulkOperation.IsEnabled = true;
+                cbLookBelow.IsEnabled = true;
+                cbSelectReportType.IsEnabled = true;
+                lstLogs.IsEnabled = true;
+                rvViewReport.Enabled = true;
             }
         }
 
