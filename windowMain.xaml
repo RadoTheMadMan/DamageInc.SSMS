@@ -162,49 +162,83 @@
                 <TextBlock Text="LOGOUT" FontFamily="Franklin Gothic Medium" FontSize="32" FontWeight="Bold" Width="118"/>
             </StackPanel>
         </Button>
-        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Center" Height="295" Header="Settings" FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,80,0,0" Grid.Row="1" VerticalAlignment="Top" Width="380">
+        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Center" Height="310" Header="Settings" FontFamily="Franklin Gothic Medium" FontWeight="Bold" Foreground="White" Margin="0,80,0,0" Grid.Row="1" VerticalAlignment="Top" Width="380" Expanded="exShowOptions_Expanded" FontSize="16">
             <StackPanel Orientation="Vertical">
-                <Label x:Name="lblApplicationSettings" Content="Application Settings" Margin="0,21,0,0" Foreground ="White" FontFamily="Franklin Gothic Medium" FontSize="22" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="309"/>
+                <Label x:Name="lblApplicationSettings" Content="Application Settings" Margin="0,21,0,0" Foreground ="White" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="309"/>
                 <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblServerAddress" Content="Server Address: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Label x:Name="lblServerAddress" Content="Server Address: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <GridSplitter Width="18" Visibility="Hidden"></GridSplitter>
-                        <TextBox x:Name="txtServerAddress" Width="163" Height="19"/>
+                    <TextBox x:Name="txtServerAddress" Width="163" Height="18" FontSize="12"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblServerPort" Content="Server Port: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <GridSplitter Width="40" Visibility="Hidden"></GridSplitter>
-                    <TextBox x:Name="txtServerPort" Text="" Width="165" Height="19"/>
+                    <Label x:Name="lblServerPort" Content="Server Port: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" VerticalAlignment="Center" Width="72"/>
+                    <GridSplitter Width="11" Visibility="Hidden"></GridSplitter>
+                    <TextBox x:Name="txtServerPort" Text="" Width="164" Height="19" FontSize="12"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblDatabaseName" Content="Database Name: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <GridSplitter Width="10" Visibility="Hidden"></GridSplitter>
-                    <TextBox x:Name="txtDatabaseName" Text="" Width="164" Height="19"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblDatabaseRootUserName" Content="Root UserName: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Label x:Name="lblDatabaseName" Content="Database Name: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <GridSplitter Width="12" Visibility="Hidden"></GridSplitter>
-                    <TextBox x:Name="txtDatabaseRootUserName" Text="" Width="164" Height="19"/>
+                    <TextBox x:Name="txtDatabaseName" Text="" Width="164" Height="19" FontSize="12"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblDatabaseRootPassword" Content="Root Password: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Label x:Name="lblDatabaseRootUserName" Content="Root UserName: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <GridSplitter Width="13" Visibility="Hidden"></GridSplitter>
+                    <TextBox x:Name="txtDatabaseRootUserName" Text="" Width="164" Height="19" FontSize="12"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Width="308">
+                    <Label x:Name="lblDatabaseRootPassword" Content="Root Password: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <GridSplitter Width="16" Visibility="Hidden"></GridSplitter>
-                    <TextBox x:Name="txtDatabaseRootPassword" Text="" Width="164" Height="19"/>
+                    <TextBox x:Name="txtDatabaseRootPassword" Text="" Width="164" Height="19" FontSize="12"/>
                 </StackPanel>
-                <Label x:Name="lblBulkOperationsList" Content="Bulk Operations" Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold"/>
-                <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblEnableBulkInsert" Content="Bulk Add: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <GridSplitter Width="50" Visibility="Hidden"></GridSplitter>
-                    <CheckBox x:Name="checkEnableBulkInsert" Content="Enabled" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Vertical" >
+                    <CheckBox x:Name="checkEnableImageDownload" Foreground="White" Content="Download images" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <Label x:Name="lblUserImagesFolder" Content="For users: " Foreground="White" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <GridSplitter Width="26" Visibility="Hidden"/>
+                            <TextBox x:Name="txtUserImageFolder" Text="" Width="152" FontSize="16" Height="20" />
+                            <GridSplitter Width="2" Visibility="Hidden" />
+                            <Button x:Name="btnBrowseUserImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label x:Name="lblClientImagesFolder" Content="For clients: " Foreground="White" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <GridSplitter Width="22" Visibility="Hidden"/>
+                            <TextBox x:Name="txtClientImageFolder" Text="" Width="151" FontSize="16" Height="20" />
+                            <GridSplitter Width="2" Visibility="Hidden" />
+                            <Button x:Name="btnBrowseClientImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Label x:Name="lblProductImagesFolder" Content="For products: " Foreground="White" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <GridSplitter Width="14" Visibility="Hidden"/>
+                            <TextBox x:Name="txtProdutImageFolder" Text="" Width="153" FontSize="16" Height="20" />
+                            <GridSplitter Width="1" Visibility="Hidden" />
+                            <Button x:Name="btnBrowseProductImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" />
+                        </StackPanel>
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblEnableBulkIUpdate" Content="Bulk Update: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <GridSplitter Width="30" Visibility="Hidden"></GridSplitter>
-                    <CheckBox x:Name="checkEnableBulkUpdate" Content="Enabled" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Width="308">
-                    <Label x:Name="lblEnableBulkDelete" Content="Bulk Delete: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="14" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <GridSplitter Width="34" Visibility="Hidden"></GridSplitter>
-                    <CheckBox x:Name="checkEnableBulkDelete" Content="Enabled" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Label x:Name="lblBulkOperationsList" Content="Bulk Operations" Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold"/>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical" Height="62">
+                        <StackPanel Orientation="Horizontal" Width="201" HorizontalAlignment="Left" >
+                            <Label x:Name="lblEnableBulkInsert" Content="Bulk Add: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <GridSplitter Width="42" Visibility="Hidden"/>
+                            <CheckBox x:Name="checkEnableBulkInsert" Content="Enabled" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="8"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Width="201" HorizontalAlignment="Left">
+                            <Label x:Name="lblEnableBulkIUpdate" Content="Bulk Update: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <GridSplitter Width="30" Visibility="Hidden"></GridSplitter>
+                            <CheckBox x:Name="checkEnableBulkUpdate" Content="Enabled" Foreground="White" VerticalAlignment="Center" FontSize="8" Width="60"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Width="203" HorizontalAlignment="Left">
+                            <Label x:Name="lblEnableBulkDelete" Content="Bulk Delete: " Foreground="White" FontFamily="Franklin Gothic Medium" FontSize="8" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <GridSplitter Width="32" Visibility="Hidden"></GridSplitter>
+                            <CheckBox x:Name="checkEnableBulkDelete" Content="Enabled" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="8"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" Height="69" Width="115">
+                        <Button Content="Save Changes" Height="17" Width="113" FontSize="10"/>
+                        <Button Content="Revert Changes" Height="21" Width="113" FontSize="10"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Expander>

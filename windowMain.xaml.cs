@@ -11432,6 +11432,21 @@ namespace DMGINC
             }
         }
 
+        private void exShowOptions_Expanded(object sender, RoutedEventArgs e)
+        {
+            Expander thisExpander = (Expander)sender;
+            if (thisExpander.IsExpanded)
+            {
+                txtServerAddress.Text = ConfigurationManager.AppSettings["DB_ADDRESS"];
+                txtServerPort.Text = ConfigurationManager.AppSettings["DB_PORT"];
+                txtDatabaseName.Text = ConfigurationManager.AppSettings["DB_NAME"];
+                txtDatabaseRootUserName.Text = ConfigurationManager.AppSettings["DB_USER"];
+                txtDatabaseRootPassword.Text = ConfigurationManager.AppSettings["DB_PASSWORD"];
+                checkEnableBulkInsert.IsChecked = manager.EnableBulkInsert;
+                checkEnableBulkUpdate.IsChecked = manager.EnableBulkUpdate;
+                checkEnableBulkDelete.IsChecked = manager.EnableBulkDelete;
+            }
+        }
     }
 
 
