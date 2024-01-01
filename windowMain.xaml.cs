@@ -5608,26 +5608,7 @@ namespace DMGINC
 
         private void frmMain_Load(object sender, RoutedEventArgs e)
         {
-            if(manager.CurrentUser == null)
-            {
-                dgContents.IsEnabled = false;
-                btnSearch.IsEnabled = false;
-                txtSearch.IsEnabled = false;
-                btnAdd.IsEnabled = false;
-                btnUpdate.IsEnabled = false;
-                btnDelete.IsEnabled = false;
-                btnAddToBulkList.IsEnabled = false;
-                btnRemoveFromBulkList.IsEnabled = false;
-                btnGenerateReport.IsEnabled = false;
-                btnCommitOperation.IsEnabled = false;
-                cbSelectTable.IsEnabled = false;
-                cbSelectCriteria.IsEnabled = false;
-                cbSelectBulkOperation.IsEnabled = false;
-                cbLookBelow.IsEnabled = false;
-                cbSelectReportType.IsEnabled = false;
-                lstLogs.IsEnabled = false;
-                rvViewReport.Enabled = false;
-            }
+           
             this.Title = $"Damage Inc. SSMS [{manager.CompanyName}]";
             foreach (ResourceDictionary dictionary in this.Resources.MergedDictionaries)
             {
