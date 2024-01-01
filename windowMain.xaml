@@ -162,5 +162,8 @@
                 <TextBlock Text="LOGOUT" FontFamily="Franklin Gothic Medium" FontSize="32" FontWeight="Bold" Width="118"/>
             </StackPanel>
         </Button>
+        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Left" Height="295" Header="Expander" Margin="10,80,0,0" Grid.Row="1" VerticalAlignment="Top" Width="361">
+            <Grid Background="#FFE5E5E5"/>
+        </Expander>
     </Grid>
 </Window>
