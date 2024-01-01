@@ -1,0 +1,16 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <BitmapImage x:Key="AppIcon" UriSource="/Resources/3792021-halloween-horror-skeleton-skull_109032.ico" />
+    <BitmapImage  x:Key="WindowCloseIcon" UriSource="/Resources/Window-close-icon.png"/>
+    <BitmapImage  x:Key="WindowMaximiseIcon" UriSource="/Resources/maximum-Window-line-icon.png"/>
+    <BitmapImage  x:Key="WindowRestoreIcon" UriSource="/Resources/restore-Window-line-icon.png"/>
+    <BitmapImage  x:Key="WindowMinimiseIcon" UriSource="/Resources/minimize-Window-icon.png"/>
+    <BitmapImage  x:Key="WindowHelpIcon" UriSource="/Resources/question-mark-round-line-icon.png"/>
+    <BitmapImage  x:Key="DefaultUserIcon" UriSource="/Resources/users.png"/>
+    <BitmapImage  x:Key="DefaultProductIcon" UriSource="/Resources/product-box-icon.png" />
+    <BitmapImage  x:Key="RefreshIcon" UriSource="/Resources/refresh-icon.png" />
+    <BitmapImage  x:Key="UpdateIcon" UriSource="/Resources/update-icon.png" />
+    <BitmapImage  x:Key="AddIcon" UriSource="/Resources/plus-icon.png" />
+    <BitmapImage  x:Key="DeleteIcon" UriSource="/Resources/recycle-bin-icon.png" />
+    <BitmapImage  x:Key="TypingIcon" UriSource="/Resources/typing-icon.png" />
+</ResourceDictionary>
