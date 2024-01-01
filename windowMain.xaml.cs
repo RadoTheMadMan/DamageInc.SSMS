@@ -5664,49 +5664,88 @@ namespace DMGINC
 
         private void tmrCheckUser_Tick(object? sender, EventArgs e)
         {
-            if (manager.CurrentUser == null)
+            try
             {
-                dgContents.IsEnabled = false;
-                btnLogin.IsEnabled = true;
-                btnLogout.IsEnabled = false;
-                btnSearch.IsEnabled = false;
-                txtSearch.IsEnabled = false;
-                btnAdd.IsEnabled = false;
-                btnUpdate.IsEnabled = false;
-                btnDelete.IsEnabled = false;
-                btnAddToBulkList.IsEnabled = false;
-                btnRemoveFromBulkList.IsEnabled = false;
-                btnGenerateReport.IsEnabled = false;
-                btnCommitOperation.IsEnabled = false;
-                cbSelectTable.IsEnabled = false;
-                cbSelectCriteria.IsEnabled = false;
-                cbSelectBulkOperation.IsEnabled = false;
-                cbLookBelow.IsEnabled = false;
-                cbSelectReportType.IsEnabled = false;
-                lstLogs.IsEnabled = false;
-                rvViewReport.Enabled = false;
+                if (manager.CurrentUser == null)
+                {
+                    dgContents.IsEnabled = false;
+                    btnLogin.IsEnabled = true;
+                    btnLogout.IsEnabled = false;
+                    btnSearch.IsEnabled = false;
+                    txtSearch.IsEnabled = false;
+                    btnAdd.IsEnabled = false;
+                    btnUpdate.IsEnabled = false;
+                    btnDelete.IsEnabled = false;
+                    btnAddToBulkList.IsEnabled = false;
+                    btnRemoveFromBulkList.IsEnabled = false;
+                    btnGenerateReport.IsEnabled = false;
+                    btnCommitOperation.IsEnabled = false;
+                    cbSelectTable.IsEnabled = false;
+                    cbSelectCriteria.IsEnabled = false;
+                    cbSelectBulkOperation.IsEnabled = false;
+                    cbLookBelow.IsEnabled = false;
+                    cbSelectReportType.IsEnabled = false;
+                    lstLogs.IsEnabled = false;
+                    rvViewReport.Enabled = false;
+                }
+                else
+                {
+                    dgContents.IsEnabled = true;
+                    btnLogin.IsEnabled = false;
+                    btnLogout.IsEnabled = true;
+                    btnSearch.IsEnabled = true;
+                    txtSearch.IsEnabled = true;
+                    btnAdd.IsEnabled = true;
+                    btnUpdate.IsEnabled = true;
+                    btnDelete.IsEnabled = true;
+                    btnAddToBulkList.IsEnabled = false;
+                    btnRemoveFromBulkList.IsEnabled = true;
+                    btnGenerateReport.IsEnabled = true;
+                    btnCommitOperation.IsEnabled = true;
+                    cbSelectTable.IsEnabled = true;
+                    cbSelectCriteria.IsEnabled = true;
+                    cbSelectBulkOperation.IsEnabled = true;
+                    cbLookBelow.IsEnabled = true;
+                    cbSelectReportType.IsEnabled = true;
+                    lstLogs.IsEnabled = true;
+                    rvViewReport.Enabled = true;
+                    string SelectedTable = cbSelectTable.Text;
+                    User currentUser = (User)manager.CurrentUser;
+                    if (SelectedTable == "Users")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            btnAddToBulkList.IsEnabled = true;
+                            btnRemoveFromBulkList.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                        }
+                        else if(currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if(currentUser.IsAdmin)
+                    {
+                        lstLogs.IsEnabled = true;
+                    }
+                    else
+                    {
+                        lstLogs.IsEnabled = false;
+                    }
+                }
             }
-            else
+            catch(Exception ex)
             {
-                dgContents.IsEnabled = true;
-                btnLogin.IsEnabled = false;
-                btnLogout.IsEnabled = true;
-                btnSearch.IsEnabled = true;
-                txtSearch.IsEnabled = true;
-                btnAdd.IsEnabled = true;
-                btnUpdate.IsEnabled = true;
-                btnDelete.IsEnabled = true;
-                btnAddToBulkList.IsEnabled = false;
-                btnRemoveFromBulkList.IsEnabled = true;
-                btnGenerateReport.IsEnabled = true;
-                btnCommitOperation.IsEnabled = true;
-                cbSelectTable.IsEnabled = true;
-                cbSelectCriteria.IsEnabled = true;
-                cbSelectBulkOperation.IsEnabled = true;
-                cbLookBelow.IsEnabled = true;
-                cbSelectReportType.IsEnabled = true;
-                lstLogs.IsEnabled = true;
-                rvViewReport.Enabled = true;
+                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
