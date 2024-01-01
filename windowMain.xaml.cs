@@ -140,6 +140,9 @@ namespace DMGINC
         public static List<string> _OrderReports = new List<string>();
         public static List<string> _DeliveryReports = new List<string>();
         public static Nullable<User> _CurrentUser;
+        public static bool _EnableBulkInsert = false;
+        public static bool _EnableBulkUpdate = false;
+        public static bool _EnableBulkDelete = false;
         public Dictionary<string, DataSet> Tables = new Dictionary<string, DataSet>()
         {
             { "Select a table", new DataSet() },
@@ -265,11 +268,19 @@ namespace DMGINC
 
         public List<string> DeliveryReports { get { return _DeliveryReports; } set { _DeliveryReports = value; } }
 
+        public bool EnableBulkInsert { get { return _EnableBulkInsert; } set { _EnableBulkInsert = value; } }
+
+        public bool EnableBulkUpdate { get { return _EnableBulkUpdate; } set { _EnableBulkUpdate = value; } }
+
+        public bool EnableBulkDelete { get { return _EnableBulkDelete; } set { _EnableBulkDelete = value; } }
 
         public DBManager()
         {
             ReportDefinitionPath = ConfigurationManager.AppSettings["REPORT_SOURCES_FOLDER"];
             CompanyName = ConfigurationManager.AppSettings["COMPANY_NAME"];
+            bool.TryParse(ConfigurationManager.AppSettings["BULK_INSERT"], out _EnableBulkInsert);
+            bool.TryParse(ConfigurationManager.AppSettings["BULK_UPDATE"], out _EnableBulkUpdate);
+            bool.TryParse(ConfigurationManager.AppSettings["BULK_DELETE"], out _EnableBulkDelete);
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder["Server"] = $".\\{ConfigurationManager.AppSettings["DB_ADDRESS"]},{ConfigurationManager.AppSettings["DB_PORT"]}";
             builder["User ID"] = ConfigurationManager.AppSettings["DB_USER"];
@@ -5710,7 +5721,13 @@ namespace DMGINC
                     lstLogs.IsEnabled = true;
                     rvViewReport.Enabled = true;
                     string SelectedTable = cbSelectTable.Text;
+                    string SelectedBulkProcedure = cbSelectBulkOperation.Text;
                     User currentUser = (User)manager.CurrentUser;
+                    if(currentUser.IsClient)
+                    {
+                        System.Windows.MessageBox.Show("This application isn't for clients. A web application for client/consumer use may be created later. Thank you for your patience and we are sorry for the inconvenience.", "This is an administration application", MessageBoxButton.OK, MessageBoxImage.Hand);
+                        System.Windows.Application.Current.Shutdown();
+                    }
                     if (SelectedTable == "Users")
                     {
                         if (currentUser.IsAdmin)
@@ -5719,9 +5736,24 @@ namespace DMGINC
                             btnAdd.IsEnabled = true;
                             btnDelete.IsEnabled = true;
                             lstBulkOperations.IsEnabled = true;
-                            btnAddToBulkList.IsEnabled = true;
-                            btnRemoveFromBulkList.IsEnabled = true;
-                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if(SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if(SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
                         }
                         else if(currentUser.IsWorker)
                         {
@@ -5733,7 +5765,396 @@ namespace DMGINC
                             lstBulkOperations.IsEnabled = false;
                         }
                     }
-                    if(currentUser.IsAdmin)
+                    if (SelectedTable == "Clients")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "ProductCategories")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "ProductBrands")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "OrderTypes")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "DiagnosticTypes")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "DeliveryServices")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "PaymentMethods")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "Products")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "ProductImages")
+                    {
+                        if (currentUser.IsAdmin)
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                        else if (currentUser.IsWorker)
+                        {
+                            dgContents.IsReadOnly = true;
+                            btnAdd.IsEnabled = false;
+                            btnDelete.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                            btnAddToBulkList.IsEnabled = false;
+                            lstBulkOperations.IsEnabled = false;
+                        }
+                    }
+                    if (SelectedTable == "ProductOrders")
+                    {
+                        if (currentUser.IsAdmin || currentUser.IsWorker || (currentUser.IsAdmin && currentUser.IsWorker))
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                    }
+                    if (SelectedTable == "OrderDeliveries")
+                    {
+                        if (currentUser.IsAdmin || currentUser.IsWorker || (currentUser.IsAdmin && currentUser.IsWorker))
+                        {
+                            dgContents.IsReadOnly = false;
+                            btnAdd.IsEnabled = true;
+                            btnDelete.IsEnabled = true;
+                            lstBulkOperations.IsEnabled = true;
+                            if (SelectedBulkProcedure == "Add")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkInsert;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkInsert;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkInsert;
+                            }
+                            else if (SelectedBulkProcedure == "Update")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkUpdate;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkUpdate;
+                            }
+                            else if (SelectedBulkProcedure == "Delete")
+                            {
+                                btnAddToBulkList.IsEnabled = manager.EnableBulkDelete;
+                                btnRemoveFromBulkList.IsEnabled = manager.EnableBulkDelete;
+                                lstBulkOperations.IsEnabled = manager.EnableBulkDelete;
+                            }
+                        }
+                    }
+                    if (currentUser.IsAdmin)
                     {
                         lstLogs.IsEnabled = true;
                     }
