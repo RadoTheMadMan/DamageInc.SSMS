@@ -162,7 +162,7 @@
                 <TextBlock Text="LOGOUT" FontFamily="Franklin Gothic Medium" FontSize="32" FontWeight="Bold" Width="118"/>
             </StackPanel>
         </Button>
-        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Center" Height="310" Header="Settings" FontFamily="Franklin Gothic Medium" FontWeight="Bold" Foreground="White" Margin="0,80,0,0" Grid.Row="1" VerticalAlignment="Top" Width="380" Expanded="exShowOptions_Expanded" FontSize="16">
+        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Left" Height="310" Header="Settings" FontFamily="Franklin Gothic Medium" FontWeight="Bold" Foreground="White" Margin="0,80,0,0" Grid.Row="1" Width="60" Expanded="exShowOptions_Expanded" FontSize="16">
             <StackPanel Orientation="Vertical">
                 <Label x:Name="lblApplicationSettings" Content="Application Settings" Margin="0,21,0,0" Foreground ="White" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="309"/>
                 <StackPanel Orientation="Horizontal" Width="308">
@@ -242,5 +242,6 @@
                 </StackPanel>
             </StackPanel>
         </Expander>
+        <WrapPanel Grid.Row="1" Margin="60,90,19,10"/>
     </Grid>
 </Window>
