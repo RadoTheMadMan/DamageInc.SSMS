@@ -297,5 +297,16 @@ namespace DMGINC
                 _RegisterCredentialsReady = false;
             }
         }
+
+        private void imgProfilePic_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            BitmapImage source;
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = "Select a profile picture..";
+            dlg.Filter = "image files |*.png*,*.jpg*,*.gif*,*.jfif*,*.tiff*";
+            if(dlg.ShowDialog() == DialogResult.OK) { 
+                source = new BitmapImage(new Uri(dlg.FileName,UriKind.Absolute));
+            }
+        }
     }
 }

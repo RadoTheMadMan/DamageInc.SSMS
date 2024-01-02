@@ -434,10 +434,11 @@ namespace DMGINC
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.Add(new SqlParameter("@username",UserName));
                         cmd.Parameters.Add(new SqlParameter("@displayname", DisplayName));
+                        cmd.Parameters.Add(new SqlParameter("@email", Email));
                         cmd.Parameters.Add(new SqlParameter("@password", Password));
                         cmd.Parameters.Add(new SqlParameter("@phone", Phone));
                         cmd.Parameters.Add(new SqlParameter("@registerdate", DateTime.Now));
-                        cmd.Parameters.Add(new SqlParameter("@profilepic", ProfilePic));
+                        cmd.Parameters.Add(new SqlParameter("@profilepic", ImageDecoderEncoder.EncodeImageToByte(ProfilePic)));
                         cmd.Parameters.Add(new SqlParameter("@isadmin", IsAdmin));
                         cmd.Parameters.Add(new SqlParameter("@isclient", IsClient));
                         cmd.Parameters.Add(new SqlParameter("@isworker", IsWorker));
