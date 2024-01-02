@@ -61,8 +61,8 @@
         </Button>
         <TextBlock Text="Your Name" Foreground="White"  HorizontalAlignment="Left" VerticalAlignment="Center"  Margin="111,0,0,0" FontFamily="Franklin Gothic Medium" FontSize="48" FontWeight="Bold" Width="238" Height="56"/>
         <TextBox x:Name="txtSearch" Grid.Column="1" HorizontalAlignment="Left" Margin="85,23,0,0" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="92" Height="38" FontFamily="Franklin Gothic Medium" FontSize="24" TextAlignment="Center" TextChanged="txtSearch_TextChanged"/>
-        <DataGrid x:Name="dgContents" Grid.Column="1" Grid.Row="1"  Margin="10,80,10,68" Opacity="1.0" CanUserAddRows="True"  CanUserDeleteRows="False" Width="Auto" ScrollViewer.CanContentScroll="True" 
-                    ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible"  SelectionChanged="dgContents_SelectionChanged">
+        <DataGrid x:Name="dgContents" Grid.Column="1" Grid.Row="1"  Margin="10,80,10,68" Opacity="1.0" CanUserAddRows="True"  CanUserDeleteRows="False" Width="Auto" ScrollViewer.CanContentScroll="True" SelectionUnit="CellOrRowHeader"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible"  SelectionChanged="dgContents_SelectionChanged" KeyDown="dgContents_KeyDown">
         </DataGrid>
         <TextBlock x:Name="lblSearch" Grid.Column="1" HorizontalAlignment="Left" Margin="10,24,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Search:" VerticalAlignment="Top" FontFamily="Franklin Gothic Medium" FontSize="22" Height="37" Width="73" Foreground="White" TextAlignment="Left"/>
         <ComboBox x:Name="cbSelectTable" Grid.Column="1" HorizontalAlignment="Left" Margin="182,24,0,0" Grid.Row="1" VerticalAlignment="Top" Width="125" Height="37" FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" SelectionChanged="cbSelectTable_SelectionChanged" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
@@ -150,19 +150,19 @@
 
             </winforms:ReportViewer>
         </WindowsFormsHost>
-        <Button x:Name="btnLogin" Margin="23,20,0,0" Grid.Row="1" VerticalAlignment="Top" Height="54"  FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" Click="btnAddToBulkList_Click" HorizontalAlignment="Left" Width="141">
+        <Button x:Name="btnLogin" Margin="0,10,0,0" Grid.Row="1" VerticalAlignment="Top" Height="22"  FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" Click="btnLogin_Click" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal">
-                <Image HorizontalAlignment="Center"  Height="32" Width="32" Source="{DynamicResource DefaultUserIcon}"/>
-                <TextBlock Text="LOGIN" FontFamily="Franklin Gothic Medium" FontSize="32" FontWeight="Bold" Width="98"/>
+                <Image HorizontalAlignment="Center"  Height="18" Width="18" Source="{DynamicResource DefaultUserIcon}"/>
+                <TextBlock Text="LOGIN" FontFamily="Franklin Gothic Medium" FontSize="18" FontWeight="Bold" Width="98"/>
             </StackPanel>
         </Button>
-        <Button x:Name="btnLogout" Margin="187,20,0,0" Grid.Row="1" VerticalAlignment="Top" Height="54"  FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" Click="btnAddToBulkList_Click" HorizontalAlignment="Left" Width="184">
+        <Button x:Name="btnLogout" Margin="0,43,0,0" Grid.Row="1" VerticalAlignment="Top" Height="22"  FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" Click="btnLogout_Click">
             <StackPanel Orientation="Horizontal">
-                <Image HorizontalAlignment="Center"  Height="32" Width="32" Source="{DynamicResource DefaultUserIcon}"/>
-                <TextBlock Text="LOGOUT" FontFamily="Franklin Gothic Medium" FontSize="32" FontWeight="Bold" Width="118"/>
+                <Image HorizontalAlignment="Center"  Height="18" Width="18" Source="{DynamicResource DefaultUserIcon}"/>
+                <TextBlock Text="LOGOUT" FontFamily="Franklin Gothic Medium" FontSize="18" FontWeight="Bold" Width="118"/>
             </StackPanel>
         </Button>
-        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Left" Height="310" Header="Settings" FontFamily="Franklin Gothic Medium" FontWeight="Bold" Foreground="White" Margin="0,80,0,0" Grid.Row="1" Width="60" Expanded="exShowOptions_Expanded" FontSize="16">
+        <Expander x:Name="exShowOptions" ExpandDirection="Right" HorizontalAlignment="Left" Header="Settings" FontFamily="Franklin Gothic Medium" FontWeight="Bold" Foreground="White" Margin="0,80,0,0" Grid.Row="1" Width="371" Expanded="exShowOptions_ExpandedChanged" Collapsed="exShowOptions_ExpandedChanged" FontSize="16" Height="300" VerticalAlignment="Top">
             <StackPanel Orientation="Vertical">
                 <Label x:Name="lblApplicationSettings" Content="Application Settings" Margin="0,21,0,0" Foreground ="White" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="309"/>
                 <StackPanel Orientation="Horizontal" Width="308">
@@ -242,6 +242,14 @@
                 </StackPanel>
             </StackPanel>
         </Expander>
-        <WrapPanel Grid.Row="1" Margin="60,90,19,10"/>
+        <DockPanel x:Name="dockLoginPanels" Grid.Row="1" Margin="60,80,29,10" LastChildFill="True" >
+
+        </DockPanel>
+        <Button x:Name="btnRegister" Margin="280,10,0,0" Grid.Row="1" VerticalAlignment="Top" Height="22"  FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" Click="btnRegister_Click" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal">
+                <Image HorizontalAlignment="Center"  Height="18" Width="18" Source="{DynamicResource DefaultUserIcon}"/>
+                <TextBlock Text="REGISTER" FontFamily="Franklin Gothic Medium" FontSize="18" FontWeight="Bold" Width="98"/>
+            </StackPanel>
+        </Button>
     </Grid>
 </Window>

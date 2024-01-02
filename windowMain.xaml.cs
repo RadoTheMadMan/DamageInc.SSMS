@@ -40,6 +40,7 @@ using Image = System.Drawing.Image;
 using DMGINC.Properties.DataSources;
 using System.Windows.Threading;
 using Path = System.IO.Path;
+using System.Data.SqlTypes;
 
 namespace DMGINC
 {
@@ -118,19 +119,63 @@ namespace DMGINC
 
     public struct User
     {
-        public int ID { get; set; }
-        public string UserName { get; set; }
-        public string DisplayName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string Phone { get; set; }
-        public int Balance { get; set; }
-        public DateTime RegisterDate { get; set; }
-        public Bitmap ProfilePic { get; set; }
-        public bool IsAdmin { get; set; }
-        public bool IsWorker { get; set; }
-        public bool IsClient { get; set; }
+        private int _ID = 0;
+        private string _UserName = "";
+        private string _DisplayName = "";
+        private string _Email = "";
+        private string _Password = "";
+        private string _Phone = "";
+        private int _Balance = 0;
+        private DateTime _RegisterDate = DateTime.Now;
+        private Bitmap _ProfilePic = new Bitmap(16,16);
+        private bool _IsAdmin = false;
+        private bool _IsWorker = false;
+        private bool _IsClient = false;
 
+        public int ID { get { return _ID; } set { _ID = value; } }
+        public string UserName { get { return _UserName; } set { _UserName = value; } }
+        public string DisplayName { get { return _DisplayName; } set { _DisplayName = value; } }
+        public string Email { get { return _Email; } set { _Email = value; } }
+        public string Password { get { return _Password; } set { _Password = value; } }
+        public string Phone { get { return _Phone; } set { _Phone = value; } }
+        public int Balance { get { return _Balance; } set { _Balance = value; } }
+        public DateTime RegisterDate { get { return _RegisterDate; } set { _RegisterDate = value; } }
+        public Bitmap ProfilePic { get { return _ProfilePic; } set { _ProfilePic = value; } }
+        public bool IsAdmin { get { return _IsAdmin; } set { _IsAdmin = value; } }
+        public bool IsWorker { get { return _IsWorker; } set { _IsWorker = value; } }
+        public bool IsClient { get { return _IsClient; } set { _IsClient = value; } }
+
+        public User ()
+        {
+            _ID = 0;
+            _UserName = "";
+            _DisplayName = "";
+            _Email = "";
+            _Password = "";
+            _Phone = "";
+            _Balance = 0;
+            _RegisterDate = DateTime.Now;
+            _ProfilePic = new Bitmap(16, 16);
+            _IsAdmin = false;
+            _IsWorker = false;
+            _IsClient = false;
+        }
+
+        public User(int ID, string UserName, string DisplayName, string Email, string Password, string Phone, int Balance, DateTime RegisterDate, Bitmap ProfilePic, bool IsAdmin, bool IsWorker, bool IsClient)
+        {
+            _ID = ID;
+            _UserName = UserName;
+            _DisplayName = DisplayName;
+            _Email = Email;
+            _Password = Password;
+            _Phone = Phone;
+            _Balance = Balance;
+            _RegisterDate = RegisterDate;
+            _ProfilePic = ProfilePic;
+            _IsAdmin = IsAdmin;
+            _IsWorker = IsWorker;
+            _IsClient = IsClient;
+        }
     }
 
     public class DBManager
@@ -322,7 +367,55 @@ namespace DMGINC
             }
         }
 
-
+        //the functions that aren't based on stored procedures are highly unreliable, never use them for your projects
+        public void Login(string UserName, string Password)
+        {
+            User user = new User();
+            try
+            {
+                SqlConnection conn = new SqlConnection(_ConnString);
+                string query = $"select * from Users where UserName = '{UserName}' and UserPassword = '{Password}'";
+                SqlCommand cmd;
+                SqlDataReader rd;
+                conn.Open();
+                if (conn.State == ConnectionState.Open)
+                {
+                    cmd = new SqlCommand(query, conn);
+                    rd = cmd.ExecuteReader();
+                    while (rd.Read() && rd.HasRows)
+                    {
+                        user.ID = rd.GetInt32("UserID");
+                        user.UserName = rd.GetString("UserName");
+                        user.DisplayName = rd.GetString("UserDisplayName");
+                        user.Email = rd.GetString("UserEmail");
+                        user.Password = rd.GetString("UserPassword");
+                        user.Phone = rd.GetString("UserPhone");
+                        decimal balance = rd.GetDecimal(6);
+                        user.Balance = Convert.ToInt32(balance);
+                        user.RegisterDate = rd.GetDateTime("DateOfRegister");
+                        SqlBinary binary = rd.GetSqlBinary(8);
+                        user.ProfilePic = ImageDecoderEncoder.DecodeImage((byte[])binary);
+                        user.IsAdmin = rd.GetBoolean(9);
+                        user.IsWorker = rd.GetBoolean (10);
+                        user.IsClient = rd.GetBoolean(11);
+                    }
+                    rd.Close();
+                    if (user.ID >= 0 && !String.IsNullOrEmpty(user.UserName) && !String.IsNullOrEmpty(user.Password))
+                    {
+                        System.Windows.MessageBox.Show($"Successfully logged in.\nWelcome {user.DisplayName}", "Login", MessageBoxButton.OK, MessageBoxImage.Information);
+                        CurrentUser = user;
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("Login failed.\nPlease check your credentials and try again.", "Login", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
 
         public void LoadReportDefinitions()
         {
@@ -5687,10 +5780,17 @@ namespace DMGINC
 
     public partial class windowMain : Window
     {
-        DBManager manager;
+        public DBManager manager;
+        ucLoginPanel loginPanel;
+
+        public DBManager getManager()
+        {
+            return manager;
+        }
         public windowMain()
         {
             manager = new DBManager();
+            loginPanel = new ucLoginPanel("Login", "Username: ", "Password: ", this.getManager());
             InitializeComponent();
             DataContext = this;
         }
@@ -5771,6 +5871,7 @@ namespace DMGINC
                 {
                     dgContents.IsEnabled = false;
                     btnLogin.IsEnabled = true;
+                    btnRegister.IsEnabled = true;
                     btnLogout.IsEnabled = false;
                     btnSearch.IsEnabled = false;
                     txtSearch.IsEnabled = false;
@@ -5793,6 +5894,7 @@ namespace DMGINC
                 {
                     dgContents.IsEnabled = true;
                     btnLogin.IsEnabled = false;
+                    btnRegister.IsEnabled = false;
                     btnLogout.IsEnabled = true;
                     btnSearch.IsEnabled = true;
                     txtSearch.IsEnabled = true;
@@ -11525,11 +11627,12 @@ namespace DMGINC
             }
         }
 
-        private void exShowOptions_Expanded(object sender, RoutedEventArgs e)
+        private void exShowOptions_ExpandedChanged(object sender, RoutedEventArgs e)
         {
             Expander thisExpander = (Expander)sender;
             if (thisExpander.IsExpanded)
             {
+                dockLoginPanels.Visibility = Visibility.Hidden;
                 txtServerAddress.Text = manager.DBAddress;
                 txtServerPort.Text = manager.DBPort.ToString();
                 txtDatabaseName.Text = manager.DBName;
@@ -11575,6 +11678,10 @@ namespace DMGINC
                 checkEnableBulkInsert.IsChecked = manager.EnableBulkInsert;
                 checkEnableBulkUpdate.IsChecked = manager.EnableBulkUpdate;
                 checkEnableBulkDelete.IsChecked = manager.EnableBulkDelete;
+            }
+            else if(!thisExpander.IsExpanded)
+            {
+                dockLoginPanels.Visibility = Visibility.Visible;
             }
         }
 
@@ -11748,6 +11855,57 @@ namespace DMGINC
             {
                 System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
+        }
+
+        private void btnLogin_Click(object sender, RoutedEventArgs e)
+        {
+            dockLoginPanels.Children.Clear();
+            if(dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+            {
+                dockLoginPanels.Children.Add(loginPanel);
+            }
+        }
+
+        private void btnRegister_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnLogout_Click(object sender, RoutedEventArgs e)
+        {
+            if(manager.CurrentUser != null)
+            {
+                if(System.Windows.MessageBox.Show("Do you want to log out?\nYou may not be able to perform operations.", "Logout", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    manager.CurrentUser = null;
+                }
+            }
+        }
+
+        private void dgContents_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            try
+            {
+                if (dgContents.SelectedItem != null && dgContents.SelectedItem.GetType() == typeof(DataRowView))
+                {
+                    int index = 0;
+                    if (dgContents.CurrentCell != null && dgContents.CurrentCell.Column != null)
+                    {
+                        index = dgContents.CurrentCell.Column.DisplayIndex;
+                        DataRowView row = (DataRowView)dgContents.SelectedItem;
+                        var value = row.Row.ItemArray[index];
+                        if(e.SystemKey == System.Windows.Input.Key.C && ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
+                        {
+                            System.Windows.Clipboard.SetText(row[index].ToString());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+
         }
     }
 
