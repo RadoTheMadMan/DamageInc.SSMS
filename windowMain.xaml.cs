@@ -5854,9 +5854,9 @@ namespace DMGINC
             if (manager.CurrentUser == null)
             {
                 dockLoginPanels.Children.Clear();
-                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(registerpanel))
                 {
-                    dockLoginPanels.Children.Add(loginPanel);
+                    dockLoginPanels.Children.Add(registerpanel);
                 }
             }
             else
@@ -11927,9 +11927,9 @@ namespace DMGINC
             if (manager.CurrentUser == null)
             {
                 dockLoginPanels.Children.Clear();
-                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(registerpanel))
                 {
-                    dockLoginPanels.Children.Add(loginPanel);
+                    dockLoginPanels.Children.Add(registerpanel);
                 }
             }
             else
