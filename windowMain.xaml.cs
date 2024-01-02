@@ -39,6 +39,7 @@ using System.Windows.Shapes;
 using Image = System.Drawing.Image;
 using DMGINC.Properties.DataSources;
 using System.Windows.Threading;
+using Path = System.IO.Path;
 
 namespace DMGINC
 {
@@ -134,12 +135,21 @@ namespace DMGINC
 
     public class DBManager
     {
+        public static string _DBAddress = "";
+        public static int _DBPort = 0;
+        public static string _DBName = "";
+        public static string _DBRootUser = "";
+        public static string _DBRootPassword = "";
         public static string _ConnString = "";
         public static string _CompanyName = "";
         private static string _ReportDefinitionPath = "";
+        private static string _UserImagePath = "";
+        private static string _ClientImagePath = "";
+        private static string _ProductImagePath = "";
         public static List<string> _OrderReports = new List<string>();
         public static List<string> _DeliveryReports = new List<string>();
         public static Nullable<User> _CurrentUser;
+        public static bool _EnableImageDownload = false;
         public static bool _EnableBulkInsert = false;
         public static bool _EnableBulkUpdate = false;
         public static bool _EnableBulkDelete = false;
@@ -257,17 +267,24 @@ namespace DMGINC
             { "OrderDeliveries", new ObservableCollection<DataRow>() }
         };
 
+        public string DBAddress { get { return _DBAddress; } set { _DBAddress = value; } }
+        public int DBPort { get { return _DBPort; } set { _DBPort = value; } }
+        public string DBName { get { return  _DBName;  } set { _DBName = value; } }
+        public string DBRootUser { get { return _DBRootUser; } set { _DBRootUser = value; } }
+        public string DBRootPassword { get { return _DBRootPassword; } set { _DBRootPassword = value; } }
         public string ConnString { get { return _ConnString; } set { _ConnString = value; } }
         public string CompanyName { get { return _CompanyName; } set { _CompanyName = value; } }
 
         public Nullable<User> CurrentUser { get { return _CurrentUser; } set { _CurrentUser =  value; } }
-
+        public string UserImagePath { get { return _UserImagePath; } set { _UserImagePath = value; } }
+        public string ClientImagePath { get { return _ClientImagePath; } set { _ClientImagePath = value; } }
+        public string ProductImagePath { get { return _ProductImagePath; } set { _ProductImagePath = value; } }
         public string ReportDefinitionPath { get { return _ReportDefinitionPath; } set { _ReportDefinitionPath = value; } }
 
         public List<string> OrderReports { get { return _OrderReports; } set { _OrderReports = value; } }
 
         public List<string> DeliveryReports { get { return _DeliveryReports; } set { _DeliveryReports = value; } }
-
+        public bool EnableImageDownload { get { return _EnableImageDownload; } set { _EnableImageDownload = value; } }
         public bool EnableBulkInsert { get { return _EnableBulkInsert; } set { _EnableBulkInsert = value; } }
 
         public bool EnableBulkUpdate { get { return _EnableBulkUpdate; } set { _EnableBulkUpdate = value; } }
@@ -276,16 +293,25 @@ namespace DMGINC
 
         public DBManager()
         {
+            UserImagePath = ConfigurationManager.AppSettings["USER_IMAGES_FOLDER"];
+            ClientImagePath = ConfigurationManager.AppSettings["CLIENT_IMAGES_FOLDER"];
+            ProductImagePath = ConfigurationManager.AppSettings["PRODUCT_IMAGES_FOLDER"];
             ReportDefinitionPath = ConfigurationManager.AppSettings["REPORT_SOURCES_FOLDER"];
             CompanyName = ConfigurationManager.AppSettings["COMPANY_NAME"];
+            bool.TryParse(ConfigurationManager.AppSettings["ENABLE_IMAGE_DOWNLOAD"], out _EnableImageDownload);
             bool.TryParse(ConfigurationManager.AppSettings["BULK_INSERT"], out _EnableBulkInsert);
             bool.TryParse(ConfigurationManager.AppSettings["BULK_UPDATE"], out _EnableBulkUpdate);
             bool.TryParse(ConfigurationManager.AppSettings["BULK_DELETE"], out _EnableBulkDelete);
+            DBAddress = ConfigurationManager.AppSettings["DB_ADDRESS"];
+            Int32.TryParse(ConfigurationManager.AppSettings["DB_PORT"], out _DBPort);
+            DBName = ConfigurationManager.AppSettings["DB_NAME"];
+            DBRootUser = ConfigurationManager.AppSettings["DB_USER"];
+            DBRootPassword = ConfigurationManager.AppSettings["DB_PASSWORD"];
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder["Server"] = $".\\{ConfigurationManager.AppSettings["DB_ADDRESS"]},{ConfigurationManager.AppSettings["DB_PORT"]}";
-            builder["User ID"] = ConfigurationManager.AppSettings["DB_USER"];
-            builder["Initial Catalog"] = ConfigurationManager.AppSettings["DB_NAME"];
-            builder["Password"] = ConfigurationManager.AppSettings["DB_PASSWORD"];
+            builder["Server"] = $".\\{DBAddress},{DBPort}";
+            builder["User ID"] = DBRootUser;
+            builder["Initial Catalog"] = DBName;
+            builder["Password"] = DBRootPassword;
             _ConnString = builder.ConnectionString.ToString();
             if (ConfigurationManager.ConnectionStrings.Count > 0)
             {
@@ -5434,142 +5460,206 @@ namespace DMGINC
 
         public void FillDG(DataGrid grid, DataTable table)
         {
-            grid.Columns.Clear();
-            List<string> columnnames = new List<string>();
-            foreach (DataColumn col in table.Columns)
+            try
             {
-                columnnames.Add(col.ColumnName);
-                if(col.DataType == typeof(string))
+                grid.Columns.Clear();
+                List<string> columnnames = new List<string>();
+                foreach (DataColumn col in table.Columns)
                 {
-                    DataGridTextColumn newcol = new DataGridTextColumn();
-                    newcol.Header = col.ColumnName;
-                    newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
-                    grid.Columns.Add(newcol);
-                }
-                else if(col.DataType == typeof(int) && !(col.ColumnName == "OrderStatus" || col.ColumnName == "DeliveryStatus"))
-                {
-                    DataGridTextColumn newcol = new DataGridTextColumn();
-                    newcol.Header = col.ColumnName;
-                    newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
-                    grid.Columns.Add(newcol);
-                }
-                else if(col.DataType == typeof(decimal))
-                {
-                    DataGridTextColumn newcol = new DataGridTextColumn();
-                    newcol.Header = col.ColumnName;
-                    newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
-                    grid.Columns.Add(newcol);
-                }
-                else if(col.DataType == typeof(int[]))
-                {
-                    DataGridComboBoxColumn newcol = new DataGridComboBoxColumn();
-                    newcol.Header = col.ColumnName;
-                    grid.Columns.Add(newcol);
-                }
-                else if(col.DataType == typeof(DateTime))
-                {
-                    FrameworkElementFactory datePickerFactory = new FrameworkElementFactory(typeof(DatePicker));
-                    datePickerFactory.SetBinding(DatePicker.SelectedDateProperty, new System.Windows.Data.Binding(string.Format("[{0}]",col.ColumnName)));
-                    datePickerFactory.SetBinding(DatePicker.DisplayDateProperty, new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName)));
-                    datePickerFactory.SetBinding(DatePicker.IsEnabledProperty, new System.Windows.Data.Binding("Status"));
-                    datePickerFactory.AddHandler(DatePicker.SelectedDateChangedEvent, new EventHandler<SelectionChangedEventArgs>((o, e) => {
-                        if (grid.CurrentCell.Column != null)
-                        {
-                            int index = grid.CurrentCell.Column.DisplayIndex;
-                            DataRowView currentRow = (DataRowView)grid.SelectedItem;
-                            int rowID = 0;
-                            object rowIDvalue = new object();
-                            object cellValue = new object();
-                            if (currentRow != null)
-                            {
-                                rowIDvalue = currentRow.Row.ItemArray[index];
-                                cellValue = currentRow.Row.ItemArray[index];
-                            }
-                            Int32.TryParse(rowIDvalue.ToString(), out rowID);
-                            DateTime newDateTime = DateTime.Now;
-                            DateTime.TryParse(cellValue.ToString(), out newDateTime);
-                            cellValue = newDateTime.Date.ToShortDateString();
-                        }
-                    }));
-                    DataGridTemplateColumn newcol = new DataGridTemplateColumn()
+                    columnnames.Add(col.ColumnName);
+                    if (col.DataType == typeof(string))
                     {
-                        Header = col.ColumnName,
-                        CellTemplate = new DataTemplate() { VisualTree = datePickerFactory }
-                    };
-                    grid.Columns.Add(newcol);
-                }
-                else if(col.DataType == typeof(bool))
-                {
-                    DataGridCheckBoxColumn newcol = new DataGridCheckBoxColumn();
-                    newcol.Header = col.ColumnName;
-                    newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
-                    grid.Columns.Add(newcol);
-                }    
-                else if(col.DataType == typeof(byte[]))
-                {
-                    FrameworkElementFactory buttonFactory = new FrameworkElementFactory(typeof(System.Windows.Controls.Button));
-                    buttonFactory.SetBinding(System.Windows.Controls.Button.ContentProperty, new System.Windows.Data.Binding("Select an image"));
-                    buttonFactory.SetBinding(System.Windows.Controls.Button.IsEnabledProperty, new System.Windows.Data.Binding("Status"));
-                    buttonFactory.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler((o,e) => {
-                        if (grid.CurrentCell.Column != null)
-                        {
-                            int index = grid.CurrentCell.Column.DisplayIndex;
-                            DataRowView currentRow = (DataRowView)grid.SelectedItem;
-                            int rowID = 0;
-                            object rowIDvalue = new object();
-                            object cellValue = new object();
-                            if (currentRow != null)
-                            {
-                                rowIDvalue = currentRow.Row.ItemArray[index];
-                                cellValue = currentRow.Row.ItemArray[index];
-                            };
-                            Int32.TryParse(rowIDvalue.ToString(), out rowID);
-                            MemoryStream ms = new MemoryStream();
-                            Bitmap selectedbmp;
-                            byte[] buffer;
-                            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-                            dlg.Title = "Select an image...";
-                            dlg.Filter = "Bitmap Files |*.bmp*;*.png;*.jpg*;*.jpeg*;*.tiff*;*.gif*;*.jfif*";
-                            dlg.Multiselect = false;
-                            bool? res = dlg.ShowDialog();
-                            if (res == true)
-                            {
-                                selectedbmp = new Bitmap(new Bitmap(dlg.FileName), 16, 16);
-                                selectedbmp.Save(ms, ImageFormat.Png);
-                                buffer = ms.GetBuffer();
-                                cellValue = buffer;
-                            }
-                        }
-                    }));
-                    DataGridTemplateColumn newcol = new DataGridTemplateColumn()
-                    {
-                        Header = col.ColumnName,
-                        CellTemplate = new DataTemplate() { VisualTree = buttonFactory }
-                    };
-                    grid.Columns.Add(newcol);
-                }
-                else if (col.DataType == typeof(int) && (col.ColumnName == "OrderStatus" || col.ColumnName == "DeliveryStatus"))
-                {
-                    DataGridComboBoxColumn newcol = new DataGridComboBoxColumn();
-                    newcol.Header = col.ColumnName;
-                    newcol.DisplayIndex = columnnames.IndexOf(col.ColumnName);       
-                    if (col.ColumnName == "OrderStatus")
-                    {
-                        newcol.ItemsSource = ProductOrderStatusList.ToArray();
+                        DataGridTextColumn newcol = new DataGridTextColumn();
+                        newcol.Header = col.ColumnName;
+                        newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
+                        grid.Columns.Add(newcol);
                     }
-                    else if(col.ColumnName == "DeliveryStatus")
+                    else if (col.DataType == typeof(int) && !(col.ColumnName == "OrderStatus" || col.ColumnName == "DeliveryStatus"))
                     {
-                        newcol.ItemsSource = OrderDeliveryStatusList.ToArray();
+                        DataGridTextColumn newcol = new DataGridTextColumn();
+                        newcol.Header = col.ColumnName;
+                        newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
+                        grid.Columns.Add(newcol);
                     }
-                    newcol.SelectedValueBinding = new System.Windows.Data.Binding(String.Format("[{0}]", col.ColumnName));
-                    newcol.DisplayMemberPath = "Key";
-                    newcol.SelectedValuePath = "Value";
-                    grid.Columns.Add(newcol);
+                    else if (col.DataType == typeof(decimal))
+                    {
+                        DataGridTextColumn newcol = new DataGridTextColumn();
+                        newcol.Header = col.ColumnName;
+                        newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
+                        grid.Columns.Add(newcol);
+                    }
+                    else if (col.DataType == typeof(int[]))
+                    {
+                        DataGridComboBoxColumn newcol = new DataGridComboBoxColumn();
+                        newcol.Header = col.ColumnName;
+                        grid.Columns.Add(newcol);
+                    }
+                    else if (col.DataType == typeof(DateTime))
+                    {
+                        FrameworkElementFactory datePickerFactory = new FrameworkElementFactory(typeof(DatePicker));
+                        datePickerFactory.SetBinding(DatePicker.SelectedDateProperty, new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName)));
+                        datePickerFactory.SetBinding(DatePicker.DisplayDateProperty, new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName)));
+                        datePickerFactory.SetBinding(DatePicker.IsEnabledProperty, new System.Windows.Data.Binding("Status"));
+                        datePickerFactory.AddHandler(DatePicker.SelectedDateChangedEvent, new EventHandler<SelectionChangedEventArgs>((o, e) =>
+                        {
+                            if (grid.CurrentCell.Column != null)
+                            {
+                                int index = grid.CurrentCell.Column.DisplayIndex;
+                                DataRowView currentRow = (DataRowView)grid.SelectedItem;
+                                int rowID = 0;
+                                object rowIDvalue = new object();
+                                object cellValue = new object();
+                                if (currentRow != null)
+                                {
+                                    rowIDvalue = currentRow.Row.ItemArray[index];
+                                    cellValue = currentRow.Row.ItemArray[index];
+                                }
+                                Int32.TryParse(rowIDvalue.ToString(), out rowID);
+                                DateTime newDateTime = DateTime.Now;
+                                DateTime.TryParse(cellValue.ToString(), out newDateTime);
+                                cellValue = newDateTime.Date.ToShortDateString();
+                            }
+                        }));
+                        DataGridTemplateColumn newcol = new DataGridTemplateColumn()
+                        {
+                            Header = col.ColumnName,
+                            CellTemplate = new DataTemplate() { VisualTree = datePickerFactory }
+                        };
+                        grid.Columns.Add(newcol);
+                    }
+                    else if (col.DataType == typeof(bool))
+                    {
+                        DataGridCheckBoxColumn newcol = new DataGridCheckBoxColumn();
+                        newcol.Header = col.ColumnName;
+                        newcol.Binding = new System.Windows.Data.Binding(string.Format("[{0}]", col.ColumnName));
+                        grid.Columns.Add(newcol);
+                    }
+                    else if (col.DataType == typeof(byte[]))
+                    {
+                        FrameworkElementFactory buttonFactory = new FrameworkElementFactory(typeof(System.Windows.Controls.Button));
+                        buttonFactory.SetBinding(System.Windows.Controls.Button.ContentProperty, new System.Windows.Data.Binding("Select an image"));
+                        buttonFactory.SetBinding(System.Windows.Controls.Button.IsEnabledProperty, new System.Windows.Data.Binding("Status"));
+                        buttonFactory.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler((o, e) =>
+                        {
+                            if (grid.CurrentCell.Column != null)
+                            {
+                                int rowindex = 0;
+                                int index = grid.CurrentCell.Column.DisplayIndex;
+                                DataRowView currentRow = (DataRowView)grid.SelectedItem;
+                                int rowID = 0;
+                                object rowIDvalue = new object();
+                                object cellValue = new object();
+                                if (currentRow != null)
+                                {
+                                    rowIDvalue = currentRow.Row.ItemArray[index];
+                                    cellValue = currentRow.Row.ItemArray[index];
+                                    rowindex = grid.Items.IndexOf(currentRow);
+                                };
+                                Int32.TryParse(rowIDvalue.ToString(), out rowID);
+                                Bitmap selectedbmp;
+                                Bitmap oldbmp;
+                                oldbmp = ImageDecoderEncoder.DecodeImage((byte[])cellValue);
+                                if (oldbmp != null)
+                                {
+                                    if (EnableImageDownload)
+                                    {
+                                        if (table.TableName == "Users")
+                                        {
+                                            string ImageName = $"USER_{rowIDvalue}_IMAGE";
+                                            if (Directory.Exists(UserImagePath))
+                                            {
+                                                FileStream stream = new FileStream($"{UserImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                oldbmp.Save(stream, ImageFormat.Png);
+                                            }
+                                            else if (Directory.Exists(Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + UserImagePath)))
+                                            {
+                                                string ImagePath = Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + UserImagePath);
+                                                FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                oldbmp.Save(stream, ImageFormat.Png);
+                                            }
+                                        }
+                                        else if (table.TableName == "Clients")
+                                        {
+                                            string ImageName = $"CLIENT_{rowIDvalue}_IMAGE";
+                                            if (Directory.Exists(ClientImagePath))
+                                            {
+                                                FileStream stream = new FileStream($"{ClientImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                oldbmp.Save(stream, ImageFormat.Png);
+                                            }
+                                            else if (Directory.Exists(Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ClientImagePath)))
+                                            {
+                                                string ImagePath = Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ClientImagePath);
+                                                FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                oldbmp.Save(stream, ImageFormat.Png);
+                                            }
+                                        }
+                                        else if (table.TableName == "ProductImages")
+                                        {
+                                            string ImageName = currentRow[1].ToString();
+                                            if (Directory.Exists(ProductImagePath))
+                                            {
+                                                FileStream stream = new FileStream($"{ProductImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                oldbmp.Save(stream, ImageFormat.Png);
+                                            }
+                                            else if (Directory.Exists(Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ProductImagePath)))
+                                            {
+                                                string ImagePath = Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ProductImagePath);
+                                                FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                oldbmp.Save(stream, ImageFormat.Png);
+                                            }
+                                        }
+                                    }
+                                }
+                                byte[] buffer;
+                                Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+                                dlg.Title = "Select an image...";
+                                dlg.Filter = "Bitmap Files |*.bmp*;*.png;*.jpg*;*.jpeg*;*.tiff*;*.gif*;*.jfif*";
+                                dlg.Multiselect = false;
+                                bool? res = dlg.ShowDialog();
+                                if (res == true)
+                                {
+                                    selectedbmp = new Bitmap(new Bitmap(dlg.FileName), 16, 16);
+                                    if (selectedbmp != null)
+                                    {
+                                        buffer = ImageDecoderEncoder.EncodeImageToByte(selectedbmp);
+                                        cellValue = buffer;
+                                    }
+                                }
+                            }
+                        }));
+                        DataGridTemplateColumn newcol = new DataGridTemplateColumn()
+                        {
+                            Header = col.ColumnName,
+                            CellTemplate = new DataTemplate() { VisualTree = buttonFactory }
+                        };
+                        grid.Columns.Add(newcol);
+                    }
+                    else if (col.DataType == typeof(int) && (col.ColumnName == "OrderStatus" || col.ColumnName == "DeliveryStatus"))
+                    {
+                        DataGridComboBoxColumn newcol = new DataGridComboBoxColumn();
+                        newcol.Header = col.ColumnName;
+                        newcol.DisplayIndex = columnnames.IndexOf(col.ColumnName);
+                        if (col.ColumnName == "OrderStatus")
+                        {
+                            newcol.ItemsSource = ProductOrderStatusList.ToArray();
+                        }
+                        else if (col.ColumnName == "DeliveryStatus")
+                        {
+                            newcol.ItemsSource = OrderDeliveryStatusList.ToArray();
+                        }
+                        newcol.SelectedValueBinding = new System.Windows.Data.Binding(String.Format("[{0}]", col.ColumnName));
+                        newcol.DisplayMemberPath = "Key";
+                        newcol.SelectedValuePath = "Value";
+                        grid.Columns.Add(newcol);
+                    }
                 }
+                grid.AutoGenerateColumns = false;
+                grid.ItemsSource = table.DefaultView;
             }
-            grid.AutoGenerateColumns = false;
-            grid.ItemsSource = table.DefaultView;
-           
+            catch(Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
 
@@ -5582,7 +5672,7 @@ namespace DMGINC
                 conn.Open();
                 if(conn.State == ConnectionState.Open)
                 {
-                    System.Windows.MessageBox.Show($"Connection successful. Connected to: {conn.ConnectionString}", "Hurrah!", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show("Connection successful.", "Hurrah!", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 }
                 conn.Close();
             }
@@ -11325,26 +11415,29 @@ namespace DMGINC
             string selectedTableName = cbSelectTable.Text;
             try
             {
-                switch (selectedIndex)
+                if (!String.IsNullOrEmpty(selectedTableName))
                 {
-                    case 0:
-                        if (manager.BulkAddList.ContainsKey(selectedTableName)) ;
-                        {
-                            lstBulkOperations.ItemsSource = manager.BulkAddList[selectedTableName];
-                        }
-                        break;
-                    case 1:
-                        if (manager.BulkUpdateList.ContainsKey(selectedTableName)) ;
-                        {
-                            lstBulkOperations.ItemsSource = manager.BulkUpdateList[selectedTableName];
-                        }
-                        break;
-                    case 2:
-                        if (manager.BulkDeleteList.ContainsKey(selectedTableName)) ;
-                        {
-                            lstBulkOperations.ItemsSource = manager.BulkDeleteList[selectedTableName];
-                        }
-                        break;
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            if (manager.BulkAddList.ContainsKey(selectedTableName)) ;
+                            {
+                                lstBulkOperations.ItemsSource = manager.BulkAddList[selectedTableName];
+                            }
+                            break;
+                        case 1:
+                            if (manager.BulkUpdateList.ContainsKey(selectedTableName)) ;
+                            {
+                                lstBulkOperations.ItemsSource = manager.BulkUpdateList[selectedTableName];
+                            }
+                            break;
+                        case 2:
+                            if (manager.BulkDeleteList.ContainsKey(selectedTableName)) ;
+                            {
+                                lstBulkOperations.ItemsSource = manager.BulkDeleteList[selectedTableName];
+                            }
+                            break;
+                    }
                 }
             }
             catch (Exception ex)
@@ -11437,14 +11530,223 @@ namespace DMGINC
             Expander thisExpander = (Expander)sender;
             if (thisExpander.IsExpanded)
             {
-                txtServerAddress.Text = ConfigurationManager.AppSettings["DB_ADDRESS"];
-                txtServerPort.Text = ConfigurationManager.AppSettings["DB_PORT"];
-                txtDatabaseName.Text = ConfigurationManager.AppSettings["DB_NAME"];
-                txtDatabaseRootUserName.Text = ConfigurationManager.AppSettings["DB_USER"];
-                txtDatabaseRootPassword.Text = ConfigurationManager.AppSettings["DB_PASSWORD"];
+                txtServerAddress.Text = manager.DBAddress;
+                txtServerPort.Text = manager.DBPort.ToString();
+                txtDatabaseName.Text = manager.DBName;
+                txtDatabaseRootUserName.Text = manager.DBRootUser;
+                txtDatabaseRootPassword.Text = manager.DBRootPassword;
+                checkEnableImageDownload.IsChecked = manager.EnableImageDownload;
+                if (Directory.Exists(manager.UserImagePath))
+                {
+                    txtUserImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseUserImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtUserImageFolder.Text = Path.GetFullPath(manager.UserImagePath);
+                }
+                else
+                {
+                    txtUserImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseUserImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtUserImageFolder.Text = System.IO.Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + manager.UserImagePath);
+                }
+                if (Directory.Exists(manager.ClientImagePath))
+                {
+                    txtClientImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseClientImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtClientImageFolder.Text = Path.GetFullPath(manager.ClientImagePath);
+                }
+                else
+                {
+                    txtClientImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseClientImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtClientImageFolder.Text = System.IO.Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + manager.ClientImagePath);
+                }
+                if (Directory.Exists(manager.ProductImagePath))
+                {
+                    txtProductImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseProductImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtProductImageFolder.Text = Path.GetFullPath(manager.ProductImagePath);
+                }
+                else
+                {
+                    txtProductImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseProductImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtProductImageFolder.Text = System.IO.Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + manager.ProductImagePath);
+                }
                 checkEnableBulkInsert.IsChecked = manager.EnableBulkInsert;
                 checkEnableBulkUpdate.IsChecked = manager.EnableBulkUpdate;
                 checkEnableBulkDelete.IsChecked = manager.EnableBulkDelete;
+            }
+        }
+
+        private void btnSaveAppSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                manager.DBAddress = txtServerAddress.Text;
+                int NewDBPort = 0;
+                Int32.TryParse(txtServerPort.Text, out NewDBPort);
+                manager.DBPort = NewDBPort;
+                manager.DBName = txtDatabaseName.Text;
+                manager.DBRootUser = txtDatabaseRootUserName.Text;
+                manager.DBRootPassword = txtDatabaseRootPassword.Text;
+                bool NewEnableImageDownload = (bool)checkEnableImageDownload.IsChecked;
+                bool NewEnableBulkInsert = (bool)checkEnableBulkInsert.IsChecked;
+                bool NewEnableBulkUpdate = (bool)checkEnableBulkUpdate.IsChecked;
+                bool NewEnableBulkDelete = (bool)checkEnableBulkDelete.IsChecked;
+                manager.EnableImageDownload = NewEnableImageDownload;
+                manager.EnableBulkInsert = NewEnableBulkInsert;
+                manager.EnableBulkUpdate = NewEnableBulkUpdate;
+                manager.EnableBulkDelete = NewEnableBulkDelete;
+                manager.UserImagePath = txtUserImageFolder.Text;
+                manager.ClientImagePath = txtClientImageFolder.Text;
+                manager.ProductImagePath = txtProductImageFolder.Text;
+                SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+                builder["Server"] = $".\\{manager.DBAddress},{manager.DBPort}";
+                builder["User ID"] = manager.DBRootUser;
+                builder["Initial Catalog"] = manager.DBName;
+                builder["Password"] = manager.DBRootPassword;
+                manager.ConnString = builder.ConnectionString.ToString();
+                Configuration conf = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                conf.AppSettings.Settings["DB_ADDRESS"].Value = manager.DBAddress;
+                conf.AppSettings.Settings["DB_PORT"].Value = manager.DBPort.ToString();
+                conf.AppSettings.Settings["DB_NAME"].Value = manager.DBName;
+                conf.AppSettings.Settings["DB_USER"].Value = manager.DBRootUser;
+                conf.AppSettings.Settings["DB_PASSWORD"].Value = manager.DBRootPassword;
+                conf.AppSettings.Settings["BULK_INSERT"].Value = manager.EnableBulkInsert.ToString();
+                conf.AppSettings.Settings["BULK_UPDATE"].Value = manager.EnableBulkUpdate.ToString();
+                conf.AppSettings.Settings["BULK_DELETE"].Value = manager.EnableBulkDelete.ToString();
+                conf.AppSettings.Settings["ENABLE_IMAGE_DOWNLOAD"].Value = manager.EnableImageDownload.ToString();
+                conf.AppSettings.Settings["USER_IMAGES_FOLDER"].Value = manager.UserImagePath;
+                conf.AppSettings.Settings["CLIENT_IMAGES_FOLDER"].Value = manager.ClientImagePath;
+                conf.AppSettings.Settings["PRODUCT_IMAGES_FOLDER"].Value = manager.ProductImagePath;
+                if (ConfigurationManager.ConnectionStrings.Count > 0)
+                {
+                    conf.ConnectionStrings.ConnectionStrings.Clear();
+                    conf.ConnectionStrings.ConnectionStrings.Add(new ConnectionStringSettings("SERVER_CONN", manager.ConnString));
+                }
+                conf.Save(ConfigurationSaveMode.Full);
+            }
+            catch(Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        private void btnRevertAppSettings_Click(object sender, RoutedEventArgs e)
+        {
+            if (exShowOptions.IsExpanded)
+            {
+                txtServerAddress.Text = manager.DBAddress;
+                txtServerPort.Text = manager.DBPort.ToString();
+                txtDatabaseName.Text = manager.DBName;
+                txtDatabaseRootUserName.Text = manager.DBRootUser;
+                txtDatabaseRootPassword.Text = manager.DBRootPassword;
+                checkEnableImageDownload.IsChecked = manager.EnableImageDownload;
+                if (Directory.Exists(manager.UserImagePath))
+                {
+                    txtUserImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseUserImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtUserImageFolder.Text = Path.GetFullPath(manager.UserImagePath);
+                }
+                else
+                {
+                    txtUserImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseUserImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtUserImageFolder.Text = System.IO.Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + manager.UserImagePath);
+                }
+                if (Directory.Exists(manager.ClientImagePath))
+                {
+                    txtClientImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseClientImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtClientImageFolder.Text = Path.GetFullPath(manager.ClientImagePath);
+                }
+                else
+                {
+                    txtClientImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseClientImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtClientImageFolder.Text = System.IO.Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + manager.ClientImagePath);
+                }
+                if (Directory.Exists(manager.ProductImagePath))
+                {
+                    txtProductImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseProductImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtProductImageFolder.Text = Path.GetFullPath(manager.ProductImagePath);
+                }
+                else
+                {
+                    txtProductImageFolder.IsEnabled = (bool)checkEnableImageDownload.IsChecked;
+                    btnBrowseProductImgFolder.IsEnabled = (bool)checkEnableImageDownload.IsEnabled;
+                    txtProductImageFolder.Text = System.IO.Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + manager.ProductImagePath);
+                }
+                checkEnableBulkInsert.IsChecked = manager.EnableBulkInsert;
+                checkEnableBulkUpdate.IsChecked = manager.EnableBulkUpdate;
+                checkEnableBulkDelete.IsChecked = manager.EnableBulkDelete;
+            }
+        }
+
+        private void btnBrowseUserImgFolder_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog flbd = new FolderBrowserDialog();
+            flbd.Description = "Select a folder for user images...";
+            flbd.UseDescriptionForTitle = true;
+            DialogResult res = flbd.ShowDialog();
+            if((res == System.Windows.Forms.DialogResult.OK) || (res == System.Windows.Forms.DialogResult.Yes))
+            {
+                txtUserImageFolder.Text = flbd.SelectedPath;
+            }
+            else
+            {
+                txtUserImageFolder.Text = manager.UserImagePath;
+            }
+        }
+
+        private void btnBrowseClientImgFolder_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog flbd = new FolderBrowserDialog();
+            flbd.Description = "Select a folder for client images...";
+            flbd.UseDescriptionForTitle = true;
+            DialogResult res = flbd.ShowDialog();
+            if ((res == System.Windows.Forms.DialogResult.OK) || (res == System.Windows.Forms.DialogResult.Yes))
+            {
+                txtClientImageFolder.Text = flbd.SelectedPath;
+            }
+            else
+            {
+                txtClientImageFolder.Text = manager.ClientImagePath;
+            }
+        }
+
+        private void btnBrowseProductImgFolder_Click(object sender, RoutedEventArgs e)
+        {
+            FolderBrowserDialog flbd = new FolderBrowserDialog();
+            flbd.Description = "Select a folder for product images...";
+            flbd.UseDescriptionForTitle = true;
+            DialogResult res = flbd.ShowDialog();
+            if ((res == System.Windows.Forms.DialogResult.OK) || (res == System.Windows.Forms.DialogResult.Yes))
+            {
+                txtProductImageFolder.Text = flbd.SelectedPath;
+            }
+            else
+            {
+                txtProductImageFolder.Text = manager.ProductImagePath;
+            }
+        }
+
+        private void checkEnableImageDownload_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                bool NewEnableImageDownload = (bool)checkEnableImageDownload.IsChecked;
+                txtUserImageFolder.IsEnabled = NewEnableImageDownload;
+                btnBrowseUserImgFolder.IsEnabled = NewEnableImageDownload;
+                txtClientImageFolder.IsEnabled = NewEnableImageDownload;
+                btnBrowseClientImgFolder.IsEnabled = NewEnableImageDownload;
+                txtProductImageFolder.IsEnabled = NewEnableImageDownload;
+                btnBrowseProductImgFolder.IsEnabled = NewEnableImageDownload;
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }

@@ -98,7 +98,7 @@
             </StackPanel>
         </Button>
         <ComboBox x:Name="cbSelectReportType" Grid.Column="1" HorizontalAlignment="Left" Margin="427,337,0,0" Grid.Row="1" VerticalAlignment="Top" Width="263" Height="38" FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <ListBox x:Name="lstLogs" Grid.Column="1" Grid.Row="2" d:ItemsSource="{d:SampleData ItemCount=5}" VerticalAlignment="Top" Height="221" Margin="10,47,10,0"/>
+        <ListBox x:Name="lstLogs" Grid.Column="1" Grid.Row="2" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,47,10,10" ScrollViewer.CanContentScroll="True"/>
         <Label x:Name="lblLogs" Grid.Column="1" Content="Logs" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Top" Foreground="White" Width="120" FontFamily="Franklin Gothic Medium" FontSize="24" FontWeight="Bold" Height="37" Margin="10,0,0,0"/>
         <Image x:Name="imgCurrentAppIcon" Grid.Column="1" HorizontalAlignment="Left" Height="84" Margin="10,6,0,0" VerticalAlignment="Top" Width="100" Source="{Binding Icon, ElementName=Window, Mode=TwoWay}" />
         <Label x:Name="lblCurrentAppTitle" Grid.Column="1" HorizontalAlignment="Center" Margin="113,0,0,0" VerticalAlignment="Bottom" Height="92" Width="582" Foreground="White" Content="{Binding Title, ElementName=Window, Mode=TwoWay}"  FontFamily="Franklin Gothic Medium" FontSize="36" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
@@ -191,28 +191,28 @@
                     <TextBox x:Name="txtDatabaseRootPassword" Text="" Width="164" Height="19" FontSize="12"/>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" >
-                    <CheckBox x:Name="checkEnableImageDownload" Foreground="White" Content="Download images" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="checkEnableImageDownload" Foreground="White" Content="Download images" FontFamily="Franklin Gothic Medium" FontSize="12" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Checked="checkEnableImageDownload_CheckedChanged" Unchecked="checkEnableImageDownload_CheckedChanged"/>
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal">
                             <Label x:Name="lblUserImagesFolder" Content="For users: " Foreground="White" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             <GridSplitter Width="26" Visibility="Hidden"/>
                             <TextBox x:Name="txtUserImageFolder" Text="" Width="152" FontSize="16" Height="20" />
                             <GridSplitter Width="2" Visibility="Hidden" />
-                            <Button x:Name="btnBrowseUserImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" />
+                            <Button x:Name="btnBrowseUserImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" Click="btnBrowseUserImgFolder_Click" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label x:Name="lblClientImagesFolder" Content="For clients: " Foreground="White" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             <GridSplitter Width="22" Visibility="Hidden"/>
                             <TextBox x:Name="txtClientImageFolder" Text="" Width="151" FontSize="16" Height="20" />
                             <GridSplitter Width="2" Visibility="Hidden" />
-                            <Button x:Name="btnBrowseClientImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" />
+                            <Button x:Name="btnBrowseClientImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" Click="btnBrowseClientImgFolder_Click" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label x:Name="lblProductImagesFolder" Content="For products: " Foreground="White" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             <GridSplitter Width="14" Visibility="Hidden"/>
-                            <TextBox x:Name="txtProdutImageFolder" Text="" Width="153" FontSize="16" Height="20" />
+                            <TextBox x:Name="txtProductImageFolder" Text="" Width="153" FontSize="16" Height="20" />
                             <GridSplitter Width="1" Visibility="Hidden" />
-                            <Button x:Name="btnBrowseProductImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" />
+                            <Button x:Name="btnBrowseProductImgFolder" Content="Browse Folder" Width="75" FontSize="10" Height="21" Click="btnBrowseProductImgFolder_Click" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
@@ -236,8 +236,8 @@
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Orientation="Vertical" Height="69" Width="115">
-                        <Button Content="Save Changes" Height="17" Width="113" FontSize="10"/>
-                        <Button Content="Revert Changes" Height="21" Width="113" FontSize="10"/>
+                        <Button x:Name="btnSaveAppSettings" Content="Save Changes" Height="17" Width="113" FontSize="10" Click="btnSaveAppSettings_Click" />
+                        <Button x:Name="btnRevertAppSettings" Content="Revert Changes" Height="21" Width="113" FontSize="10" Click="btnRevertAppSettings_Click" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>
