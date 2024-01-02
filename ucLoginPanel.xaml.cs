@@ -52,7 +52,7 @@ namespace DMGINC
             _PasswordLabelText = "Password: ";
             _UserName = "";
             _Password = "";
-            if(!String.IsNullOrEmpty(_UserName) && !String.IsNullOrEmpty(Password))
+            if(!String.IsNullOrEmpty(_UserName) && !String.IsNullOrEmpty(_Password))
             {
                 _LoginCredentialsReady = true;
             }

@@ -413,7 +413,42 @@ namespace DMGINC
             }
             catch(Exception ex)
             {
-                System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                System.Windows.MessageBox.Show($"An exception occured and login failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        public void Register(string UserName, string DisplayName, string Email, string Password, string Phone, Bitmap ProfilePic, bool IsAdmin, bool IsWorker, bool IsClient)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(UserName) && !String.IsNullOrEmpty(DisplayName) && !String.IsNullOrEmpty(Email) && !String.IsNullOrEmpty(Password) && !String.IsNullOrEmpty(Phone) &&
+                IsAdmin != null && IsWorker != null && !IsClient != null && ProfilePic != null)
+                {
+                    SqlConnection conn = new SqlConnection(_ConnString);
+                    string query = "RegisterUser";
+                    SqlCommand cmd;
+                    conn.Open();
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        cmd = new SqlCommand(query, conn);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@username",UserName));
+                        cmd.Parameters.Add(new SqlParameter("@displayname", DisplayName));
+                        cmd.Parameters.Add(new SqlParameter("@password", Password));
+                        cmd.Parameters.Add(new SqlParameter("@phone", Phone));
+                        cmd.Parameters.Add(new SqlParameter("@registerdate", DateTime.Now));
+                        cmd.Parameters.Add(new SqlParameter("@profilepic", ProfilePic));
+                        cmd.Parameters.Add(new SqlParameter("@isadmin", IsAdmin));
+                        cmd.Parameters.Add(new SqlParameter("@isclient", IsClient));
+                        cmd.Parameters.Add(new SqlParameter("@isworker", IsWorker));
+                        cmd.ExecuteNonQuery();
+                        System.Windows.MessageBox.Show($"Successfully registered.\nNow please login.", "Registration", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured and registration failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -5782,6 +5817,7 @@ namespace DMGINC
     {
         public DBManager manager;
         ucLoginPanel loginPanel;
+        ucRegisterPanel registerpanel;
 
         public DBManager getManager()
         {
@@ -5791,6 +5827,7 @@ namespace DMGINC
         {
             manager = new DBManager();
             loginPanel = new ucLoginPanel("Login", "Username: ", "Password: ", this.getManager());
+            registerpanel = new ucRegisterPanel("Register", "Username: ", "Display Name: ", "Email: ", "Password: ", "Phone: ", "Profile Picture: ", "Admin", "Worker", "Client", this.getManager());
             InitializeComponent();
             DataContext = this;
         }
@@ -5814,6 +5851,18 @@ namespace DMGINC
             tmrCheckUser.IsEnabled = true;
             tmrCheckUser.Interval = new TimeSpan(1);
             tmrCheckUser.Tick += tmrCheckUser_Tick;
+            if (manager.CurrentUser == null)
+            {
+                dockLoginPanels.Children.Clear();
+                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+                {
+                    dockLoginPanels.Children.Add(loginPanel);
+                }
+            }
+            else
+            {
+                dockLoginPanels.Children.Clear();
+            }
             this.Title = $"Damage Inc. SSMS [{manager.CompanyName}]";
             foreach (ResourceDictionary dictionary in this.Resources.MergedDictionaries)
             {
@@ -11859,16 +11908,34 @@ namespace DMGINC
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            dockLoginPanels.Children.Clear();
-            if(dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+            if (manager.CurrentUser == null)
             {
-                dockLoginPanels.Children.Add(loginPanel);
+                dockLoginPanels.Children.Clear();
+                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+                {
+                    dockLoginPanels.Children.Add(loginPanel);
+                }
+            }
+            else
+            {
+                dockLoginPanels.Children.Clear();
             }
         }
 
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-
+            if (manager.CurrentUser == null)
+            {
+                dockLoginPanels.Children.Clear();
+                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+                {
+                    dockLoginPanels.Children.Add(loginPanel);
+                }
+            }
+            else
+            {
+                dockLoginPanels.Children.Clear();
+            }
         }
 
         private void btnLogout_Click(object sender, RoutedEventArgs e)
@@ -11896,7 +11963,7 @@ namespace DMGINC
                         var value = row.Row.ItemArray[index];
                         if(e.SystemKey == System.Windows.Input.Key.C && ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
                         {
-                            System.Windows.Clipboard.SetText(row[index].ToString());
+                            System.Windows.Clipboard.SetText(value.ToString());
                         }
                     }
                 }
