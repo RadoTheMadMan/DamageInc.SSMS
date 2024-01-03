@@ -98,7 +98,20 @@
             </StackPanel>
         </Button>
         <ComboBox x:Name="cbSelectReportType" Grid.Column="1" HorizontalAlignment="Left" Margin="427,337,0,0" Grid.Row="1" VerticalAlignment="Top" Width="263" Height="38" FontFamily="Franklin Gothic Medium" FontSize="16" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <ListBox x:Name="lstLogs" Grid.Column="1" Grid.Row="2" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,47,10,10" ScrollViewer.CanContentScroll="True"/>
+        <ListBox x:Name="lstLogs" Grid.Column="1" Grid.Row="2" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,47,10,10" ScrollViewer.CanContentScroll="True">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="DMGInc.Log">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Date }" FontFamily="Franklin Gothic Medium" FontSize="20" FontWeight="Bold" Margin="2" VerticalAlignment="Center"></TextBlock>
+                    <TextBlock Grid.Column="1" Text="{Binding Message}" FontFamily="Franklin Gothic Medium" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="5"></TextBlock>
+                </Grid>
+            </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
         <Label x:Name="lblLogs" Grid.Column="1" Content="Logs" HorizontalAlignment="Left" Grid.Row="2" VerticalAlignment="Top" Foreground="White" Width="120" FontFamily="Franklin Gothic Medium" FontSize="24" FontWeight="Bold" Height="37" Margin="10,0,0,0"/>
         <Image x:Name="imgCurrentAppIcon" Grid.Column="1" HorizontalAlignment="Left" Height="84" Margin="10,6,0,0" VerticalAlignment="Top" Width="100" Source="{Binding Icon, ElementName=Window, Mode=TwoWay}" />
         <Label x:Name="lblCurrentAppTitle" Grid.Column="1" HorizontalAlignment="Center" Margin="113,0,0,0" VerticalAlignment="Bottom" Height="92" Width="582" Foreground="White" Content="{Binding Title, ElementName=Window, Mode=TwoWay}"  FontFamily="Franklin Gothic Medium" FontSize="36" FontWeight="Bold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>

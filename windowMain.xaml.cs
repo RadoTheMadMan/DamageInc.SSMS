@@ -41,6 +41,7 @@ using DMGINC.Properties.DataSources;
 using System.Windows.Threading;
 using Path = System.IO.Path;
 using System.Data.SqlTypes;
+using Microsoft.Extensions.Logging;
 
 namespace DMGINC
 {
@@ -220,6 +221,26 @@ namespace DMGINC
         }
     }
 
+    struct Log
+    {
+        DateTime _Date = DateTime.Now;
+        string _Message =  "[LOG]";
+        public DateTime Date { get { return _Date; } set { _Date = value; } }
+        public string Message { get { return _Message; } set { _Message = value; } }
+
+        public Log()
+        {
+            _Date = DateTime.Now;
+            _Message = "[LOG]";
+        }
+
+        public Log(DateTime Date, string Message)
+        {
+            _Date = Date;
+            _Message = Message;
+        }
+    }
+
     public class DBManager
     {
         public static string _DBAddress = "";
@@ -234,9 +255,11 @@ namespace DMGINC
         private static string _ClientImagePath = "";
         private static string _ProductImagePath = "";
         private static string _LastLoginFile = "";
+        private static string _LogFile = "";
         public static List<string> _OrderReports = new List<string>();
         public static List<string> _DeliveryReports = new List<string>();
         public static Nullable<User> _CurrentUser;
+        private ObservableCollection<Log?> _SystemLogs = new ObservableCollection<Log?>();
         public static bool _EnableImageDownload = false;
         public static bool _EnableBulkInsert = false;
         public static bool _EnableBulkUpdate = false;
@@ -366,11 +389,13 @@ namespace DMGINC
         public string CompanyName { get { return _CompanyName; } set { _CompanyName = value; } }
 
         public Nullable<User> CurrentUser { get { return _CurrentUser; } set { _CurrentUser =  value; } }
+
         public string UserImagePath { get { return _UserImagePath; } set { _UserImagePath = value; } }
         public string ClientImagePath { get { return _ClientImagePath; } set { _ClientImagePath = value; } }
         public string ProductImagePath { get { return _ProductImagePath; } set { _ProductImagePath = value; } }
         public string ReportDefinitionPath { get { return _ReportDefinitionPath; } set { _ReportDefinitionPath = value; } }
         public string LastLoginFile { get { return _LastLoginFile; } set { _LastLoginFile = value; } }
+        public string LogFile { get { return _LogFile; } set { _LogFile = value; } }
         public List<string> OrderReports { get { return _OrderReports; } set { _OrderReports = value; } }
 
         public List<string> DeliveryReports { get { return _DeliveryReports; } set { _DeliveryReports = value; } }
@@ -381,6 +406,7 @@ namespace DMGINC
 
         public bool EnableBulkDelete { get { return _EnableBulkDelete; } set { _EnableBulkDelete = value; } }
 
+
         public DBManager()
         {
             UserImagePath = ConfigurationManager.AppSettings["USER_IMAGES_FOLDER"];
@@ -388,6 +414,7 @@ namespace DMGINC
             ProductImagePath = ConfigurationManager.AppSettings["PRODUCT_IMAGES_FOLDER"];
             ReportDefinitionPath = ConfigurationManager.AppSettings["REPORT_SOURCES_FOLDER"];
             LastLoginFile = ConfigurationManager.AppSettings["LAST_LOGIN_FILE"];
+            LogFile = ConfigurationManager.AppSettings["LOG_FILE"];
             CompanyName = ConfigurationManager.AppSettings["COMPANY_NAME"];
             bool.TryParse(ConfigurationManager.AppSettings["ENABLE_IMAGE_DOWNLOAD"], out _EnableImageDownload);
             bool.TryParse(ConfigurationManager.AppSettings["BULK_INSERT"], out _EnableBulkInsert);
@@ -415,6 +442,55 @@ namespace DMGINC
         }
 
         //the functions that aren't based on stored procedures are highly unreliable, never use them for your projects
+
+        public void RefreshLogs(System.Windows.Controls.ListBox listbox)
+        {
+            SqlConnection conn = new SqlConnection(ConnString);
+            string query = "select * from Logs";
+            SqlCommand cmd;
+            SqlDataReader dr;
+            DataTable dt = new DataTable();
+            _SystemLogs.Clear();
+            try
+            {
+                cmd = new SqlCommand(query, conn);
+                conn.Open();
+                if (conn.State == ConnectionState.Open)
+                {
+                    dr = cmd.ExecuteReader();
+                    dt.Load(dr);
+                    if (dt.Rows.Count > 0)
+                    {
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            DateTime LogDate = DateTime.Now;
+                            string LogMessage = "";
+                            DateTime.TryParse(row[0].ToString(), out LogDate);
+                            LogMessage = row[1].ToString();
+                            if (LogDate != null && !String.IsNullOrEmpty(LogMessage))
+                            {
+                                _SystemLogs.Add(new Log(LogDate, LogMessage));
+                            }
+                        }
+
+                    }
+                    conn.Close();
+                    listbox.ItemsSource = null;
+                    listbox.Items.Clear();
+                    listbox.ItemsSource = _SystemLogs;
+                    StreamWriter swr = new StreamWriter(LogFile, false);
+                    foreach (Log log in _SystemLogs)
+                    {
+                        swr.WriteLine("[" + log.Date.ToString() + "]" + " " + log.Message + "\n");
+                    }
+                    swr.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured and loading logs failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
 
         public void LoadLastLoginData()
         {
@@ -6092,6 +6168,10 @@ namespace DMGINC
                     cbSelectTable.IsEnabled = false;
                     cbSelectCriteria.IsEnabled = false;
                     cbSelectBulkOperation.IsEnabled = false;
+                    if(lstLogs.Items.Count == 0)
+                    {
+                        lstLogs.Items.Add("You aren't logged in. Log in as an administrator to see the logs.");
+                    }
                     cbLookBelow.IsEnabled = false;
                     cbSelectReportType.IsEnabled = false;
                     lstLogs.IsEnabled = false;
@@ -6559,10 +6639,15 @@ namespace DMGINC
                     }
                     if (currentUser.IsAdmin)
                     {
+                        manager.RefreshLogs(lstLogs);
                         lstLogs.IsEnabled = true;
                     }
                     else
                     {
+                        if (lstLogs.Items.Count == 0)
+                        {
+                            lstLogs.Items.Add("You aren not an administrator and you can't see the logs. Log in as an administrator to see the logs.");
+                        }
                         lstLogs.IsEnabled = false;
                     }
                 }
