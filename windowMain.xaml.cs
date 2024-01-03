@@ -88,9 +88,19 @@ namespace DMGINC
             {
                 byte[] result;
                 MemoryStream stream = new MemoryStream();
-                image.Save(stream, ImageFormat.Png);
+                if(image != null)
+                { 
+                    image.Save(stream, ImageFormat.Png);
+                }
                 result = stream.ToArray();
-                return result;
+                if (result != null)
+                {
+                    return result;
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch
             {
@@ -105,10 +115,42 @@ namespace DMGINC
                 string base64result = "";
                 byte[] result;
                 MemoryStream stream = new MemoryStream();
-                image.Save(stream, ImageFormat.Png);
-                result = stream.ToArray();
-                base64result = Convert.ToBase64String(result);
+                if (image != null)
+                {
+                    image.Save(stream, ImageFormat.Png);
+                    result = stream.ToArray();
+                    base64result = Convert.ToBase64String(result);
+                }
                 return base64result;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static ImageSource ConvertToImageSource(Bitmap image)
+        {
+            try
+            {
+                ImageSource srcresult;
+                MemoryStream stream = new MemoryStream();
+                BitmapDecoder bdc = new PngBitmapDecoder(stream,BitmapCreateOptions.PreservePixelFormat,BitmapCacheOption.OnLoad);
+                if (image != null)
+                {
+                    image.Save(stream, ImageFormat.Png);
+                    stream.Seek(0, SeekOrigin.Begin);
+                    bdc = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+                }
+                srcresult = bdc.Frames[0];
+                if (srcresult != null)
+                {
+                    return srcresult;
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch
             {
@@ -191,6 +233,7 @@ namespace DMGINC
         private static string _UserImagePath = "";
         private static string _ClientImagePath = "";
         private static string _ProductImagePath = "";
+        private static string _LastLoginFile = "";
         public static List<string> _OrderReports = new List<string>();
         public static List<string> _DeliveryReports = new List<string>();
         public static Nullable<User> _CurrentUser;
@@ -312,6 +355,8 @@ namespace DMGINC
             { "OrderDeliveries", new ObservableCollection<DataRow>() }
         };
 
+        public Dictionary<string, string> LastLoginData = new Dictionary<string, string>();
+
         public string DBAddress { get { return _DBAddress; } set { _DBAddress = value; } }
         public int DBPort { get { return _DBPort; } set { _DBPort = value; } }
         public string DBName { get { return  _DBName;  } set { _DBName = value; } }
@@ -325,7 +370,7 @@ namespace DMGINC
         public string ClientImagePath { get { return _ClientImagePath; } set { _ClientImagePath = value; } }
         public string ProductImagePath { get { return _ProductImagePath; } set { _ProductImagePath = value; } }
         public string ReportDefinitionPath { get { return _ReportDefinitionPath; } set { _ReportDefinitionPath = value; } }
-
+        public string LastLoginFile { get { return _LastLoginFile; } set { _LastLoginFile = value; } }
         public List<string> OrderReports { get { return _OrderReports; } set { _OrderReports = value; } }
 
         public List<string> DeliveryReports { get { return _DeliveryReports; } set { _DeliveryReports = value; } }
@@ -342,6 +387,7 @@ namespace DMGINC
             ClientImagePath = ConfigurationManager.AppSettings["CLIENT_IMAGES_FOLDER"];
             ProductImagePath = ConfigurationManager.AppSettings["PRODUCT_IMAGES_FOLDER"];
             ReportDefinitionPath = ConfigurationManager.AppSettings["REPORT_SOURCES_FOLDER"];
+            LastLoginFile = ConfigurationManager.AppSettings["LAST_LOGIN_FILE"];
             CompanyName = ConfigurationManager.AppSettings["COMPANY_NAME"];
             bool.TryParse(ConfigurationManager.AppSettings["ENABLE_IMAGE_DOWNLOAD"], out _EnableImageDownload);
             bool.TryParse(ConfigurationManager.AppSettings["BULK_INSERT"], out _EnableBulkInsert);
@@ -365,9 +411,38 @@ namespace DMGINC
                 conf.ConnectionStrings.ConnectionStrings.Add(new ConnectionStringSettings("SERVER_CONN", _ConnString));
                 conf.Save(ConfigurationSaveMode.Full);
             }
+            LoadLastLoginData();
         }
 
         //the functions that aren't based on stored procedures are highly unreliable, never use them for your projects
+
+        public void LoadLastLoginData()
+        {
+            try
+            {
+                BinaryReader br = new BinaryReader(new FileStream(LastLoginFile, FileMode.Open));
+                string content = br.ReadString();
+                KeyValuePair<string, string> logindatapair;
+                string[] tokens = content.Split("\n");
+                string[] userdata;
+                foreach(string token in tokens)
+                {
+                    userdata = token.Split(",");
+                    if (userdata != null && userdata.Count() == 2)
+                    {
+                        logindatapair = new KeyValuePair<string, string>(userdata[0], userdata[1]);
+                        if (!LastLoginData.ContainsKey(logindatapair.Key))
+                        {
+                            LastLoginData.Add(logindatapair.Key,logindatapair.Value);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured and loading last login data failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
         public void Login(string UserName, string Password)
         {
             User user = new User();
@@ -402,8 +477,11 @@ namespace DMGINC
                     rd.Close();
                     if (user.ID >= 0 && !String.IsNullOrEmpty(user.UserName) && !String.IsNullOrEmpty(user.Password))
                     {
-                        System.Windows.MessageBox.Show($"Successfully logged in.\nWelcome {user.DisplayName}", "Login", MessageBoxButton.OK, MessageBoxImage.Information);
+                        BinaryWriter bw = new BinaryWriter(new FileStream(LastLoginFile, FileMode.OpenOrCreate | FileMode.Append));
+                        bw.Write($"{user.UserName},{user.Password}\n");
+                        bw.Close();
                         CurrentUser = user;
+                        System.Windows.MessageBox.Show($"Successfully logged in.\nWelcome {user.DisplayName}", "Login", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
@@ -450,6 +528,68 @@ namespace DMGINC
             catch(Exception ex)
             {
                 System.Windows.MessageBox.Show($"An exception occured and registration failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        public void UpdateCurrentUser(string UserName, string DisplayName, string Email, string Password, string Phone, Bitmap ProfilePic)
+        {
+            try
+            {
+                if (!String.IsNullOrEmpty(UserName) && !String.IsNullOrEmpty(DisplayName) && !String.IsNullOrEmpty(Email) && !String.IsNullOrEmpty(Password) && !String.IsNullOrEmpty(Phone))
+                {
+                    User currentUser = (User)CurrentUser;
+                    SqlConnection conn = new SqlConnection(_ConnString);
+                    string query = "UpdateUserByID";
+                    SqlCommand cmd;
+                    conn.Open();
+                    if (conn.State == ConnectionState.Open)
+                    {
+                        cmd = new SqlCommand(query, conn);
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.Add(new SqlParameter("@id", currentUser.ID));
+                        cmd.Parameters.Add(new SqlParameter("@new_user_name", UserName));
+                        cmd.Parameters.Add(new SqlParameter("@new_display_name", DisplayName));
+                        cmd.Parameters.Add(new SqlParameter("@new_email", Email));
+                        cmd.Parameters.Add(new SqlParameter("@new_password", Password));
+                        cmd.Parameters.Add(new SqlParameter("@new_phone", Phone));
+                        cmd.Parameters.Add(new SqlParameter("@new_balance", currentUser.Balance));
+                        cmd.Parameters.Add(new SqlParameter("@new_profile_pic", ProfilePic != null? ImageDecoderEncoder.EncodeImageToByte(ProfilePic):ImageDecoderEncoder.EncodeImageToByte(new Bitmap(16,16))));
+                        cmd.Parameters.Add(new SqlParameter("@new_is_admin", currentUser.IsAdmin));
+                        cmd.Parameters.Add(new SqlParameter("@new_is_client", currentUser.IsClient));
+                        cmd.Parameters.Add(new SqlParameter("@new_is_worker", currentUser.IsWorker));
+                        cmd.ExecuteNonQuery();
+                        System.Windows.MessageBox.Show($"Successfully updated your data.\nNow please logout and login.", "Registration", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured and updating your data failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        public void DeleteCurrentUser()
+        {
+            try
+            {
+                User currentUser = (User)CurrentUser;
+                SqlConnection conn = new SqlConnection(_ConnString);
+                string query = "DeleteUserByID";
+                SqlCommand cmd;
+                conn.Open();
+                if (conn.State == ConnectionState.Open)
+                {
+                    cmd = new SqlCommand(query, conn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@id", currentUser.ID));
+                    cmd.ExecuteNonQuery();
+                    CurrentUser = null;
+                    System.Windows.MessageBox.Show($"Successfully unregistered.\nNow register again.", "Registration", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An exception occured and unregistration failed.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
 
@@ -5697,14 +5837,16 @@ namespace DMGINC
                                             string ImageName = $"USER_{rowIDvalue}_IMAGE";
                                             if (Directory.Exists(UserImagePath))
                                             {
-                                                FileStream stream = new FileStream($"{UserImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                FileStream stream = new FileStream($"{UserImagePath}/{ImageName}.png", FileMode.OpenOrCreate|FileMode.CreateNew);
                                                 oldbmp.Save(stream, ImageFormat.Png);
+                                                stream.Close();
                                             }
                                             else if (Directory.Exists(Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + UserImagePath)))
                                             {
                                                 string ImagePath = Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + UserImagePath);
-                                                FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate|FileMode.CreateNew);
                                                 oldbmp.Save(stream, ImageFormat.Png);
+                                                stream.Close();
                                             }
                                         }
                                         else if (table.TableName == "Clients")
@@ -5712,14 +5854,16 @@ namespace DMGINC
                                             string ImageName = $"CLIENT_{rowIDvalue}_IMAGE";
                                             if (Directory.Exists(ClientImagePath))
                                             {
-                                                FileStream stream = new FileStream($"{ClientImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                FileStream stream = new FileStream($"{ClientImagePath}/{ImageName}.png", FileMode.OpenOrCreate|FileMode.CreateNew);
                                                 oldbmp.Save(stream, ImageFormat.Png);
+                                                stream.Close();
                                             }
                                             else if (Directory.Exists(Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ClientImagePath)))
                                             {
                                                 string ImagePath = Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ClientImagePath);
                                                 FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
                                                 oldbmp.Save(stream, ImageFormat.Png);
+                                                stream.Close();
                                             }
                                         }
                                         else if (table.TableName == "ProductImages")
@@ -5727,14 +5871,16 @@ namespace DMGINC
                                             string ImageName = currentRow[1].ToString();
                                             if (Directory.Exists(ProductImagePath))
                                             {
-                                                FileStream stream = new FileStream($"{ProductImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
+                                                FileStream stream = new FileStream($"{ProductImagePath}/{ImageName}.png", FileMode.OpenOrCreate|FileMode.CreateNew);
                                                 oldbmp.Save(stream, ImageFormat.Png);
+                                                stream.Close();
                                             }
                                             else if (Directory.Exists(Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ProductImagePath)))
                                             {
                                                 string ImagePath = Path.GetFullPath(System.IO.Directory.GetCurrentDirectory() + ProductImagePath);
                                                 FileStream stream = new FileStream($"{ImagePath}/{ImageName}.png", FileMode.OpenOrCreate);
                                                 oldbmp.Save(stream, ImageFormat.Png);
+                                                stream.Close();
                                             }
                                         }
                                     }
@@ -5817,6 +5963,7 @@ namespace DMGINC
     public partial class windowMain : Window
     {
         public DBManager manager;
+        ucUserCustomisationPanel customisationPanel;
         ucLoginPanel loginPanel;
         ucRegisterPanel registerpanel;
 
@@ -5827,7 +5974,7 @@ namespace DMGINC
         public windowMain()
         {
             manager = new DBManager();
-            loginPanel = new ucLoginPanel("Login", "Username: ", "Password: ", this.getManager());
+            loginPanel = new ucLoginPanel("Login", "Username: ", "Password: ", manager.LastLoginData.Last().Key,manager.LastLoginData.Last().Value, this.getManager());
             registerpanel = new ucRegisterPanel("Register", "Username: ", "Display Name: ", "Email: ", "Password: ", "Phone: ", "Profile Picture: ", "Admin", "Worker", "Client", this.getManager());
             InitializeComponent();
             DataContext = this;
@@ -5855,9 +6002,19 @@ namespace DMGINC
             if (manager.CurrentUser == null)
             {
                 dockLoginPanels.Children.Clear();
-                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(registerpanel))
+                if (manager.LastLoginData.Keys.Count == 0)
                 {
-                    dockLoginPanels.Children.Add(registerpanel);
+                    if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(registerpanel))
+                    {
+                        dockLoginPanels.Children.Add(registerpanel);
+                    }
+                }
+                else if(manager.LastLoginData.Keys.Count > 0)
+                {
+                    if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(loginPanel))
+                    {
+                        dockLoginPanels.Children.Add(registerpanel);
+                    }
                 }
             }
             else
@@ -5942,6 +6099,11 @@ namespace DMGINC
                 }
                 else
                 {
+                    User currentUser = (User)manager.CurrentUser;
+                    customisationPanel = new ucUserCustomisationPanel("Account Settings", "Username: ", "Display Name: ", "Email: ", "Password: ", "Phone: ", "Profile Picture: ", currentUser.UserName, currentUser.DisplayName, currentUser.Email, currentUser.Password, currentUser.Phone, currentUser.ProfilePic,currentUser.IsAdmin, currentUser.IsWorker, currentUser.IsClient, this.getManager());
+                    txtbCurrentUserDisplayName.Text = currentUser.DisplayName.ToString();
+                    ImageSourceConverter c = new ImageSourceConverter();
+                    CurrentUserButtonIcon.Source = ImageDecoderEncoder.ConvertToImageSource(currentUser.ProfilePic);
                     dgContents.IsEnabled = true;
                     btnLogin.IsEnabled = false;
                     btnRegister.IsEnabled = false;
@@ -5964,7 +6126,6 @@ namespace DMGINC
                     rvViewReport.Enabled = true;
                     string SelectedTable = cbSelectTable.Text;
                     string SelectedBulkProcedure = cbSelectBulkOperation.Text;
-                    User currentUser = (User)manager.CurrentUser;
                     if(currentUser.IsClient)
                     {
                         System.Windows.MessageBox.Show("This application isn't for clients. A web application for client/consumer use may be created later. Thank you for your patience and we are sorry for the inconvenience.", "This is an administration application", MessageBoxButton.OK, MessageBoxImage.Hand);
@@ -11974,6 +12135,22 @@ namespace DMGINC
                 System.Windows.MessageBox.Show($"An exception occured.\nDetails:{ex.Message}\n{ex.StackTrace}", "Critical Error. You can thank the programmer for that", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
 
+        }
+
+        private void btnCurrentUserOptions_Click(object sender, RoutedEventArgs e)
+        {
+            if (manager.CurrentUser != null)
+            {
+                dockLoginPanels.Children.Clear();
+                if (dockLoginPanels.IsVisible && !dockLoginPanels.Children.Contains(customisationPanel))
+                {
+                    dockLoginPanels.Children.Add(customisationPanel);
+                }
+            }
+            else
+            {
+                dockLoginPanels.Children.Clear();
+            }
         }
     }
 

@@ -54,12 +54,12 @@
           Background="White" Grid.Column="2" Click="btnMinimise_Click" RenderTransformOrigin="0.544,0.595">
             <Image x:Name="MinimiseButtonIcon" Source="{DynamicResource WindowMinimiseIcon}" Stretch="Fill" RenderTransformOrigin="0.558,0.523"/>
         </Button>
-        <Button x:Name="btnCurrentUserOptions"   Background="Transparent" Width="84" Height="84" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0">
+        <Button x:Name="btnCurrentUserOptions"   Background="Transparent" Width="84" Height="84" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Click="btnCurrentUserOptions_Click">
             <Image x:Name="CurrentUserButtonIcon" Source="{DynamicResource DefaultUserIcon}" Stretch="Fill" Height="84">
 
             </Image>
         </Button>
-        <TextBlock Text="Your Name" Foreground="White"  HorizontalAlignment="Left" VerticalAlignment="Center"  Margin="111,0,0,0" FontFamily="Franklin Gothic Medium" FontSize="48" FontWeight="Bold" Width="238" Height="56"/>
+        <TextBlock x:Name="txtbCurrentUserDisplayName" Text="Your Name" Foreground="White"  HorizontalAlignment="Left" VerticalAlignment="Center"  Margin="111,0,0,0" FontFamily="Franklin Gothic Medium" FontSize="48" FontWeight="Bold" Width="238" Height="56"/>
         <TextBox x:Name="txtSearch" Grid.Column="1" HorizontalAlignment="Left" Margin="85,23,0,0" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="92" Height="38" FontFamily="Franklin Gothic Medium" FontSize="24" TextAlignment="Center" TextChanged="txtSearch_TextChanged"/>
         <DataGrid x:Name="dgContents" Grid.Column="1" Grid.Row="1"  Margin="10,80,10,68" Opacity="1.0" CanUserAddRows="True"  CanUserDeleteRows="False" Width="Auto" ScrollViewer.CanContentScroll="True" SelectionUnit="CellOrRowHeader"
                     ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Visible"  SelectionChanged="dgContents_SelectionChanged" KeyDown="dgContents_KeyDown">

@@ -1,10 +1,11 @@
 ﻿<UserControl
+             x:Class="DMGINC.ucRegisterPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DMGINC"
-    xmlns:System="clr-namespace:System;assembly=System.Runtime" xmlns:Primitives="clr-namespace:System.Windows.Controls.Ribbon.Primitives;assembly=System.Windows.Controls.Ribbon" x:Class="DMGINC.ucRegisterPanel"
+    xmlns:System="clr-namespace:System;assembly=System.Runtime" xmlns:Primitives="clr-namespace:System.Windows.Controls.Ribbon.Primitives;assembly=System.Windows.Controls.Ribbon" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="310"
     >
