@@ -953,7 +953,13 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Авротски права Damage Inc Shop and Service Center System 2023-2024</Value>
+                      <Value>Авторски права Damage Inc. SSMS 2024-</Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Year(Now)</Value>
                       <Style>
                         <FontStyle>Italic</FontStyle>
                       </Style>

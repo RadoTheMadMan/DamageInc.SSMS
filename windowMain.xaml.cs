@@ -11761,44 +11761,41 @@ namespace DMGINC
                 {
                     Term = txtSearch.Text;
                     manager.GenerateReportDataSet(Term, LookBelowCertainCriterias, Table, Criteria, out reportds);
-                    if (dgContents.SelectedItem != null && dgContents.SelectedItem.GetType() == typeof(DataRowView))
+                    if (reportds.Tables.Count > 0)
                     {
-                        DataRowView currentView = (DataRowView)dgContents.SelectedItem;
-                        selectedRow = currentView.Row;
-                        Int32.TryParse(selectedRow[0].ToString(), out targetID);
-                        manager.GenerateReportDataSet(Term, LookBelowCertainCriterias, Table, Criteria, out reportds);
-                        ReportDataSource reportdata = new ReportDataSource();
-                        rvViewReport.LocalReport.DataSources.Clear();
-                        rvViewReport.LocalReport.ReportPath = ReportSource;
-                        rvViewReport.LocalReport.DataSources.Add(reportdata);
-                        ReportParameter idparam = new ReportParameter();
-                        if (Table == "ProductOrders")
-                        {
-                            OrderReportDS ds = new OrderReportDS();
-                            ds.Tables.Clear();
-                            ds.Tables.Add(reportds.Tables[0].Copy());
-                            reportdata.Name = "OrderReportDS";
-                            reportdata.Value = ds.Tables[0];
-                            idparam = new ReportParameter("orderid");
-                            idparam.Values.Add(targetID.ToString());
-                        }
-                        else if(Table == "OrderDeliveries")
-                        {
-                            DeliveryReportDS ds = new DeliveryReportDS();
-                            ds.Tables.Clear();
-                            ds.Tables.Add(reportds.Tables[0].Copy());
-                            reportdata.Name = "DeliveryReportDS";
-                            reportdata.Value = ds.Tables[0];
-                            idparam = new ReportParameter("deliveryid");
-                            idparam.Values.Add(targetID.ToString());
-                        }
-                        ReportParameter companynameparam = new ReportParameter("companyname");
-                        companynameparam.Values.Add(manager.CompanyName);
-                        report_params.Add(idparam);
-                        report_params.Add(companynameparam);
-                        rvViewReport.LocalReport.SetParameters(report_params);
-                        rvViewReport.RefreshReport();
+                        Int32.TryParse(reportds.Tables[0].Rows[0].ToString(), out targetID);
                     }
+                    ReportDataSource reportdata = new ReportDataSource();
+                    rvViewReport.LocalReport.DataSources.Clear();
+                    rvViewReport.LocalReport.ReportPath = ReportSource;
+                    rvViewReport.LocalReport.DataSources.Add(reportdata);
+                    ReportParameter idparam = new ReportParameter();
+                    if (Table == "ProductOrders")
+                    {
+                        OrderReportDS ds = new OrderReportDS();
+                        ds.Tables.Clear();
+                        ds.Tables.Add(reportds.Tables[0].Copy());
+                        reportdata.Name = "OrderReportDS";
+                        reportdata.Value = ds.Tables[0];
+                        idparam = new ReportParameter("orderid");
+                        idparam.Values.Add(targetID.ToString());
+                    }
+                    else if (Table == "OrderDeliveries")
+                    {
+                        DeliveryReportDS ds = new DeliveryReportDS();
+                        ds.Tables.Clear();
+                        ds.Tables.Add(reportds.Tables[0].Copy());
+                        reportdata.Name = "DeliveryReportDS";
+                        reportdata.Value = ds.Tables[0];
+                        idparam = new ReportParameter("deliveryid");
+                        idparam.Values.Add(targetID.ToString());
+                    }
+                    ReportParameter companynameparam = new ReportParameter("companyname");
+                    companynameparam.Values.Add(manager.CompanyName);
+                    report_params.Add(idparam);
+                    report_params.Add(companynameparam);
+                    rvViewReport.LocalReport.SetParameters(report_params);
+                    rvViewReport.RefreshReport();
                 }
             }
             catch(Exception ex)

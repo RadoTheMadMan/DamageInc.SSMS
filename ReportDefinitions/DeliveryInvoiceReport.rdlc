@@ -907,7 +907,7 @@
             <DataSetName>DeliveryReportDS</DataSetName>
             <Top>0.505in</Top>
             <Left>0.52336in</Left>
-            <Height>2.25333in</Height>
+            <Height>2.25332in</Height>
             <Width>7.89997in</Width>
             <ZIndex>17</ZIndex>
             <Style>
@@ -1046,7 +1046,13 @@
                 <Paragraph>
                   <TextRuns>
                     <TextRun>
-                      <Value>Copyright Damage Inc Shop and Service Center System 2023-2024</Value>
+                      <Value>Copyright Damage Inc. SSMS 2024-</Value>
+                      <Style>
+                        <FontStyle>Italic</FontStyle>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Year(Now)</Value>
                       <Style>
                         <FontStyle>Italic</FontStyle>
                       </Style>

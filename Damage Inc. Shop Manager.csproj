@@ -30,6 +30,8 @@
     <None Remove="DeliveryReport.rdlc" />
     <None Remove="DeliveryReportBG.rdlc" />
     <None Remove="DeliveryReportDS.xsd" />
+    <None Remove="DMGIncShopSystem.sql" />
+    <None Remove="DMGIncShopSystem_Cyrilic.sql" />
     <None Remove="OrderInvoiceReport.rdlc" />
     <None Remove="OrderInvoiceReportBG.rdlc" />
     <None Remove="OrderReport.rdlc" />
@@ -366,6 +368,12 @@
 
   <ItemGroup>
     <Content Include="3792021-halloween-horror-skeleton-skull_109032.ico" />
+    <Content Include="DMGIncShopSystem.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="DMGIncShopSystem_Cyrilic.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\3792021-halloween-horror-skeleton-skull_109032.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
